@@ -1,0 +1,36 @@
+service: sandbox-sls-efs-storage
+
+frameworkVersion: ">=1.66.0 <2.0.0"
+
+provider:
+  name: aws
+  region: ap-northeast-1
+  stage: dev
+
+resources:
+  Resources:
+    MyEFS:
+      Type: "AWS::EFS::FileSystem"
+
+    MyEFSMountTarget:
+      Type: "AWS::EFS::MountTarget"
+      Properties:
+        FileSystemId:
+          Ref: MyEFS
+        SubnetId: ${cf:sandbox-sls-efs-network-${opt:stage, self:provider.stage}.SubnetId}
+        SecurityGroups:
+          - ${cf:sandbox-sls-efs-network-${opt:stage, self:provider.stage}.SecurityGroupId}
+
+    MyEFSAccessPoint:
+      Type: "AWS::EFS::AccessPoint"
+      Properties:
+        FileSystemId:
+          Ref: MyEFS
+
+  Outputs:
+    FileSystemId:
+      Value:
+        Ref: MyEFS
+    FileSystemAccessPointId:
+      Value:
+        Ref: MyEFSAccessPoint

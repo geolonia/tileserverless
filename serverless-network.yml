@@ -1,0 +1,48 @@
+service: sandbox-sls-efs-network
+
+frameworkVersion: ">=1.66.0 <2.0.0"
+
+provider:
+  name: aws
+  region: ap-northeast-1
+  stage: dev
+
+resources:
+  Resources:
+    MyVPC:
+      Type: AWS::EC2::VPC
+      Properties:
+        CidrBlock: 10.0.0.0/16
+        EnableDnsSupport: true
+        EnableDnsHostnames: true
+
+    MySecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: EFS and Lambda
+        VpcId:
+          Ref: MyVPC
+        SecurityGroupIngress:
+          - IpProtocol: tcp
+            FromPort: 2049
+            ToPort: 2049
+            CidrIp: "0.0.0.0/0"
+
+    MySubnet:
+      Type: AWS::EC2::Subnet
+      Properties:
+        AvailabilityZone: ap-northeast-1a
+        VpcId:
+          Ref: MyVPC
+        CidrBlock: 10.0.0.0/24
+
+  Outputs:
+    VpcId:
+      Value:
+        Ref: MyVPC
+    SecurityGroupId:
+      Value:
+        Ref: MySecurityGroup
+    SubnetId:
+      Value:
+        Ref: MySubnet

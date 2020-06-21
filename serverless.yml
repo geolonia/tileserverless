@@ -1,0 +1,56 @@
+service: sandbox-sls-efs
+
+frameworkVersion: ">=1.66.0 <2.0.0"
+
+package:
+  exclude:
+    - .git/**
+    - src/**
+    - .*
+    - tsconfig.*
+    - package-lock.json
+    - yarn.lock
+    - README.md
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  memorySize: 128
+  region: ap-northeast-1
+  stage: dev
+  vpc:
+    securityGroupIds:
+      - ${cf:sandbox-sls-efs-network-${opt:stage, self:provider.stage}.SecurityGroupId}
+    subnetIds:
+      - ${cf:sandbox-sls-efs-network-${opt:stage, self:provider.stage}.SubnetId}
+  environment:
+    MOUNT_PATH: ${self:custom.MOUNT_PATH}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - "elasticfilesystem:ClientMount"
+        - "elasticfilesystem:ClientWrite"
+        - "elasticfilesystem:DescribeMountTargets"
+      Resource:
+        - Fn::Join:
+            - ":"
+            - - arn:aws:elasticfilesystem
+              - ${self:provider.region}
+              - Ref: "AWS::AccountId"
+              - file-system/${cf:sandbox-sls-efs-storage-${opt:stage, self:provider.stage}.FileSystemId}
+
+  # on Progress🚀
+  # https://github.com/serverless/serverless/issues/7848
+  fileSystem:
+    - fileSystemId: ${cf:sandbox-sls-efs-storage-${opt:stage, self:provider.stage}.FileSystemId}
+      accessPointId: ${cf:sandbox-sls-efs-storage-${opt:stage, self:provider.stage}.FileSystemAccessPointId}
+      mountPath: ${self:custom.MOUNT_PATH}
+
+functions:
+  read:
+    handler: dist/read.handler
+  write:
+    handler: dist/write.handler
+
+custom:
+  MOUNT_PATH: /mnt/hoge

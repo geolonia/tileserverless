@@ -1,0 +1,26 @@
+{
+  "name": "sandbox-sls-efs",
+  "version": "1.0.0",
+  "main": "serverless.yml",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "test": "sls deploy --noDeploy",
+    "deploy:network": "sls deploy --config ./serverless-network.yml",
+    "deploy:storage": "sls deploy --config ./serverless-storage.yml",
+    "deploy:app": "npm run build && sls deploy",
+    "remove:app": "sls remove",
+    "remove:storage": "sls remove --config ./serverless-storage.yml",
+    "remove:network": "sls remove --config ./serverless-network.yml"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.56",
+    "aws-sdk": "^2.701.0",
+    "serverless": "^1.73.1",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.5"
+  },
+  "peerDependencies": {
+    "aws-sdk": "^2"
+  }
+}
