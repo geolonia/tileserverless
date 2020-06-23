@@ -7,6 +7,6 @@ export const handler = async (
   _1: Lambda.Context,
   callback: Lambda.Callback
 ) => {
-  const data = await fs.promises.readFile(`${MOUNT_PATH}/hello`, "utf-8");
-  return callback(null, { success: true, data });
+  const data = await fs.promises.readFile(`${MOUNT_PATH}/name`, "utf-8");
+  return callback(null, data);
 };

@@ -19,7 +19,7 @@ resources:
           Ref: MyEFS
         SubnetId: ${cf:sandbox-sls-efs-network-${opt:stage, self:provider.stage}.SubnetId}
         SecurityGroups:
-          - ${cf:sandbox-sls-efs-network-${opt:stage, self:provider.stage}.SecurityGroupId}
+          - ${cf:sandbox-sls-efs-network-${opt:stage, self:provider.stage}.EFSSecurityGroupId}
 
     MyEFSAccessPoint:
       Type: "AWS::EFS::AccessPoint"

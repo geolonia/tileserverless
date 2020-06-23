@@ -8,6 +8,9 @@ export const handler = async (
   callback: Lambda.Callback
 ) => {
   const { name } = event;
-  await fs.promises.writeFile(`${MOUNT_PATH}/hello`, `Hello, ${name}!`);
+  if (!name) {
+    throw new Error("no name specified.");
+  }
+  await fs.promises.writeFile(`${MOUNT_PATH}/name`, name);
   return callback(null, { success: true });
 };

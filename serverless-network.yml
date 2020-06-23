@@ -16,17 +16,25 @@ resources:
         EnableDnsSupport: true
         EnableDnsHostnames: true
 
-    MySecurityGroup:
+    MyEFSSecurityGroup:
       Type: AWS::EC2::SecurityGroup
       Properties:
-        GroupDescription: EFS and Lambda
+        GroupDescription: EFS
         VpcId:
           Ref: MyVPC
         SecurityGroupIngress:
           - IpProtocol: tcp
             FromPort: 2049
             ToPort: 2049
-            CidrIp: "0.0.0.0/0"
+            SourceSecurityGroupId:
+              Ref: MyLambdaSecurityGroup
+
+    MyLambdaSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Lambda
+        VpcId:
+          Ref: MyVPC
 
     MySubnet:
       Type: AWS::EC2::Subnet
@@ -40,9 +48,12 @@ resources:
     VpcId:
       Value:
         Ref: MyVPC
-    SecurityGroupId:
+    EFSSecurityGroupId:
       Value:
-        Ref: MySecurityGroup
+        Ref: MyEFSSecurityGroup
+    LambdaSecurityGroupId:
+      Value:
+        Ref: MyLambdaSecurityGroup
     SubnetId:
       Value:
         Ref: MySubnet
