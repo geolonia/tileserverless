@@ -26,6 +26,16 @@ resources:
       Properties:
         FileSystemId:
           Ref: MyEFS
+        PosixUser:
+          Uid: 1000
+          Gid: 1000
+        RootDirectory:
+          Path: '/data'
+          CreationInfo:
+            OwnerUid: 1000
+            OwnerGid: 1000
+            Permissions: '0777'
+
 
   Outputs:
     FileSystemId:

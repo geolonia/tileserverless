@@ -10,14 +10,14 @@ provider:
 resources:
   Resources:
     MyVPC:
-      Type: AWS::EC2::VPC
+      Type: "AWS::EC2::VPC"
       Properties:
         CidrBlock: 10.0.0.0/16
         EnableDnsSupport: true
         EnableDnsHostnames: true
 
     MyEFSSecurityGroup:
-      Type: AWS::EC2::SecurityGroup
+      Type: "AWS::EC2::SecurityGroup"
       Properties:
         GroupDescription: EFS
         VpcId:
@@ -30,14 +30,14 @@ resources:
               Ref: MyLambdaSecurityGroup
 
     MyLambdaSecurityGroup:
-      Type: AWS::EC2::SecurityGroup
+      Type: "AWS::EC2::SecurityGroup"
       Properties:
         GroupDescription: Lambda
         VpcId:
           Ref: MyVPC
 
     MySubnet:
-      Type: AWS::EC2::Subnet
+      Type: "AWS::EC2::Subnet"
       Properties:
         AvailabilityZone: ap-northeast-1a
         VpcId:

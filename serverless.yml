@@ -11,6 +11,7 @@ package:
     - package-lock.json
     - yarn.lock
     - README.md
+    - serverless-*.yml
 
 provider:
   name: aws
@@ -32,15 +33,13 @@ provider:
       Action:
         - "elasticfilesystem:ClientMount"
         - "elasticfilesystem:ClientWrite"
-        - "elasticfilesystem:DescribeMountTargets"
       Resource:
-        - "*"
-        # - Fn::Join:
-        #     - ":"
-        #     - - arn:aws:elasticfilesystem
-        #       - ${self:provider.region}
-        #       - Ref: "AWS::AccountId"
-        #       - file-system/${cf:sandbox-sls-efs-storage-${opt:stage, self:provider.stage}.FileSystemId}
+        - Fn::Join:
+            - ":"
+            - - arn:aws:elasticfilesystem
+              - ${self:provider.region}
+              - Ref: "AWS::AccountId"
+              - access-point/${cf:sandbox-sls-efs-storage-${opt:stage, self:provider.stage}.FileSystemAccessPointId}
 
   # on Progress🚀
   # https://github.com/serverless/serverless/issues/7848
@@ -56,4 +55,4 @@ functions:
     handler: dist/write.handler
 
 custom:
-  MOUNT_PATH: /mnt/hoge
+  MOUNT_PATH: /mnt/data
