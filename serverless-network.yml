@@ -1,6 +1,6 @@
 service: sandbox-sls-efs-network
 
-frameworkVersion: ">=1.66.0 <2.0.0"
+frameworkVersion: ">=1.73.0 <2.0.0"
 
 provider:
   name: aws
@@ -20,40 +20,32 @@ resources:
       Type: "AWS::EC2::SecurityGroup"
       Properties:
         GroupDescription: EFS
-        VpcId:
-          Ref: MyVPC
+        VpcId: !Ref MyVPC
         SecurityGroupIngress:
           - IpProtocol: tcp
             FromPort: 2049
             ToPort: 2049
-            SourceSecurityGroupId:
-              Ref: MyLambdaSecurityGroup
+            SourceSecurityGroupId: !Ref MyLambdaSecurityGroup
 
     MyLambdaSecurityGroup:
       Type: "AWS::EC2::SecurityGroup"
       Properties:
         GroupDescription: Lambda
-        VpcId:
-          Ref: MyVPC
+        VpcId: !Ref MyVPC
 
     MySubnet:
       Type: "AWS::EC2::Subnet"
       Properties:
         AvailabilityZone: ap-northeast-1a
-        VpcId:
-          Ref: MyVPC
+        VpcId: !Ref MyVPC
         CidrBlock: 10.0.0.0/24
 
   Outputs:
     VpcId:
-      Value:
-        Ref: MyVPC
+      Value: !Ref MyVPC
     EFSSecurityGroupId:
-      Value:
-        Ref: MyEFSSecurityGroup
+      Value: !Ref MyEFSSecurityGroup
     LambdaSecurityGroupId:
-      Value:
-        Ref: MyLambdaSecurityGroup
+      Value: !Ref MyLambdaSecurityGroup
     SubnetId:
-      Value:
-        Ref: MySubnet
+      Value: !Ref MySubnet

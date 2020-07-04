@@ -1,6 +1,6 @@
 service: sandbox-sls-efs-storage
 
-frameworkVersion: ">=1.66.0 <2.0.0"
+frameworkVersion: ">=1.73.0 <2.0.0"
 
 provider:
   name: aws
@@ -15,8 +15,7 @@ resources:
     MyEFSMountTarget:
       Type: "AWS::EFS::MountTarget"
       Properties:
-        FileSystemId:
-          Ref: MyEFS
+        FileSystemId: !Ref MyEFS
         SubnetId: ${cf:sandbox-sls-efs-network-${opt:stage, self:provider.stage}.SubnetId}
         SecurityGroups:
           - ${cf:sandbox-sls-efs-network-${opt:stage, self:provider.stage}.EFSSecurityGroupId}
@@ -24,23 +23,19 @@ resources:
     MyEFSAccessPoint:
       Type: "AWS::EFS::AccessPoint"
       Properties:
-        FileSystemId:
-          Ref: MyEFS
+        FileSystemId: !Ref MyEFS
         PosixUser:
           Uid: 1000
           Gid: 1000
         RootDirectory:
-          Path: '/data'
+          Path: "/data"
           CreationInfo:
             OwnerUid: 1000
             OwnerGid: 1000
-            Permissions: '0777'
-
+            Permissions: "0777"
 
   Outputs:
     FileSystemId:
-      Value:
-        Ref: MyEFS
+      Value: !Ref MyEFS
     FileSystemAccessPointId:
-      Value:
-        Ref: MyEFSAccessPoint
+      Value: !Ref MyEFSAccessPoint
