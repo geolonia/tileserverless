@@ -1,12 +1,12 @@
-# sandbox-sls-efs
+# tileserverless
 
-My sandbox EFS and Lambda with Serverless Framework
+A Serverless Tile Server Kit.
 
 ## Deploy
 
 ```shell
-$ git clone https://github.com/kamataryo/sandbox-sls-efs
-$ cd sandbox-sls-efs
+$ git clone https://github.com/geolonia/tileserverless
+$ cd tileserverless
 $ yarn
 $ cp .envrc.sample .envrc
 $ vi .envrc

@@ -1,6 +1,6 @@
-service: sandbox-sls-efs
+service: tileserverless
 
-frameworkVersion: ">=1.66.0 <2.0.0"
+frameworkVersion: ">=1.73.0 <2.0.0"
 
 package:
   exclude:
@@ -22,11 +22,11 @@ provider:
   stage: dev
   vpc:
     securityGroupIds:
-      - ${cf:sandbox-sls-efs-network-${opt:stage, self:provider.stage}.LambdaSecurityGroupId}
+      - ${self:custom.sgId}
     subnetIds:
-      - ${cf:sandbox-sls-efs-network-${opt:stage, self:provider.stage}.SubnetId}
+      - ${self:custom.subnetId}
   environment:
-    MOUNT_PATH: ${self:custom.MOUNT_PATH}
+    MOUNT_PATH: ${self:custom.mountPath}
 
   iamRoleStatements:
     - Effect: Allow
@@ -39,20 +39,41 @@ provider:
             - - arn:aws:elasticfilesystem
               - ${self:provider.region}
               - Ref: "AWS::AccountId"
-              - access-point/${cf:sandbox-sls-efs-storage-${opt:stage, self:provider.stage}.FileSystemAccessPointId}
+              - access-point/${self:custom.accessPointId}
+
+custom:
+  sgId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.LambdaSecurityGroupId}
+  subnetId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.SubnetId}
+  fsId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemId}
+  accessPointId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemAccessPointId}
+  mountPath: /mnt/data
 
   # on Progress🚀
   # https://github.com/serverless/serverless/issues/7848
-  fileSystem:
-    - fileSystemId: ${cf:sandbox-sls-efs-storage-${opt:stage, self:provider.stage}.FileSystemId}
-      accessPointId: ${cf:sandbox-sls-efs-storage-${opt:stage, self:provider.stage}.FileSystemAccessPointId}
-      mountPath: ${self:custom.MOUNT_PATH}
+  # fileSystemConfig:
+  #   - fileSystemId: ${self:custom.fsId}
+  #     accessPointId: ${self:custom.accessPointId}
+  #     mountPath: ${self:custom.MOUNT_PATH}
 
 functions:
-  read:
-    handler: dist/read.handler
-  write:
-    handler: dist/write.handler
+  tile:
+    handler: dist/tile.handler
+    events:
+      - http:
+          path: /{z}/{x}/{y}.mvt
+          method: get
+          integration: lambda-proxy
+          cors:
+            origin: "*"
+            maxAge: 86400
 
-custom:
-  MOUNT_PATH: /mnt/data
+  metadata:
+    handler: dist/metadata.handler
+    events:
+      - http:
+          path: /tiles.json
+          method: get
+          integration: lambda-proxy
+          cors:
+            origin: "*"
+            maxAge: 86400

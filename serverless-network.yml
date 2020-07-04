@@ -1,4 +1,4 @@
-service: sandbox-sls-efs-network
+service: tileserverless-network
 
 frameworkVersion: ">=1.73.0 <2.0.0"
 
@@ -9,43 +9,43 @@ provider:
 
 resources:
   Resources:
-    MyVPC:
+    TileServerlessVPC:
       Type: "AWS::EC2::VPC"
       Properties:
         CidrBlock: 10.0.0.0/16
         EnableDnsSupport: true
         EnableDnsHostnames: true
 
-    MyEFSSecurityGroup:
+    TileServerlessEFSSecurityGroup:
       Type: "AWS::EC2::SecurityGroup"
       Properties:
         GroupDescription: EFS
-        VpcId: !Ref MyVPC
+        VpcId: !Ref TileServerlessVPC
         SecurityGroupIngress:
           - IpProtocol: tcp
             FromPort: 2049
             ToPort: 2049
-            SourceSecurityGroupId: !Ref MyLambdaSecurityGroup
+            SourceSecurityGroupId: !Ref TileServerlessLambdaSecurityGroup
 
-    MyLambdaSecurityGroup:
+    TileServerlessLambdaSecurityGroup:
       Type: "AWS::EC2::SecurityGroup"
       Properties:
         GroupDescription: Lambda
-        VpcId: !Ref MyVPC
+        VpcId: !Ref TileServerlessVPC
 
     MySubnet:
       Type: "AWS::EC2::Subnet"
       Properties:
         AvailabilityZone: ap-northeast-1a
-        VpcId: !Ref MyVPC
+        VpcId: !Ref TileServerlessVPC
         CidrBlock: 10.0.0.0/24
 
   Outputs:
     VpcId:
-      Value: !Ref MyVPC
+      Value: !Ref TileServerlessVPC
     EFSSecurityGroupId:
-      Value: !Ref MyEFSSecurityGroup
+      Value: !Ref TileServerlessEFSSecurityGroup
     LambdaSecurityGroupId:
-      Value: !Ref MyLambdaSecurityGroup
+      Value: !Ref TileServerlessLambdaSecurityGroup
     SubnetId:
       Value: !Ref MySubnet

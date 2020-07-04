@@ -1,11 +1,11 @@
 {
-  "name": "sandbox-sls-efs",
+  "name": "tileserverless",
+  "description": "A Serverless Tile Server Kit.",
   "version": "1.0.0",
   "main": "serverless.yml",
   "license": "MIT",
   "scripts": {
     "build": "tsc",
-    "test": "sls deploy --noDeploy",
     "deploy:network": "sls deploy --config ./serverless-network.yml",
     "deploy:storage": "sls deploy --config ./serverless-storage.yml",
     "deploy:app": "npm run build && sls deploy",
@@ -14,7 +14,8 @@
     "remove:network": "sls remove --config ./serverless-network.yml"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.56",
+    "@types/aws-lambda": "^8.10.57",
+    "@types/sqlite3": "^3.1.6",
     "aws-sdk": "^2.701.0",
     "serverless": "^1.73.1",
     "ts-node": "^8.10.2",
@@ -22,5 +23,8 @@
   },
   "peerDependencies": {
     "aws-sdk": "^2"
+  },
+  "dependencies": {
+    "sqlite3": "^5.0.0"
   }
 }

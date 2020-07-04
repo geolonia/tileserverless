@@ -1,4 +1,4 @@
-service: sandbox-sls-efs-storage
+service: tileserverless-storage
 
 frameworkVersion: ">=1.73.0 <2.0.0"
 
@@ -7,28 +7,33 @@ provider:
   region: ap-northeast-1
   stage: dev
 
+custom:
+  sgId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.LambdaSecurityGroupId}
+  subnetId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.SubnetId}
+  mountPath: /data
+
 resources:
   Resources:
-    MyEFS:
+    TileServerlessEFS:
       Type: "AWS::EFS::FileSystem"
 
-    MyEFSMountTarget:
+    TileServerlessEFSMountTarget:
       Type: "AWS::EFS::MountTarget"
       Properties:
-        FileSystemId: !Ref MyEFS
-        SubnetId: ${cf:sandbox-sls-efs-network-${opt:stage, self:provider.stage}.SubnetId}
+        FileSystemId: !Ref TileServerlessEFS
+        SubnetId: ${self:custom.subnetId}
         SecurityGroups:
-          - ${cf:sandbox-sls-efs-network-${opt:stage, self:provider.stage}.EFSSecurityGroupId}
+          - ${self:custom.sgId}
 
-    MyEFSAccessPoint:
+    TileServerlessEFSAccessPoint:
       Type: "AWS::EFS::AccessPoint"
       Properties:
-        FileSystemId: !Ref MyEFS
+        FileSystemId: !Ref TileServerlessEFS
         PosixUser:
           Uid: 1000
           Gid: 1000
         RootDirectory:
-          Path: "/data"
+          Path: ${self:custom.mountPath}
           CreationInfo:
             OwnerUid: 1000
             OwnerGid: 1000
@@ -36,6 +41,6 @@ resources:
 
   Outputs:
     FileSystemId:
-      Value: !Ref MyEFS
+      Value: !Ref TileServerlessEFS
     FileSystemAccessPointId:
-      Value: !Ref MyEFSAccessPoint
+      Value: !Ref TileServerlessEFSAccessPoint
