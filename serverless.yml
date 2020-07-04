@@ -20,47 +20,47 @@ provider:
   region: ap-northeast-1
 
   stage: dev
-  vpc:
-    securityGroupIds:
-      - ${self:custom.sgId}
-    subnetIds:
-      - ${self:custom.subnetId}
-  environment:
-    MOUNT_PATH: ${self:custom.mountPath}
+  # vpc:
+  #   securityGroupIds:
+  #     - ${self:custom.sgId}
+  #   subnetIds:
+  #     - ${self:custom.subnetId}
+  # environment:
+  #   MOUNT_PATH: ${self:custom.mountPath}
+  #
+  # iamRoleStatements:
+  #   - Effect: Allow
+  #     Action:
+  #       - "elasticfilesystem:ClientMount"
+  #       - "elasticfilesystem:ClientWrite"
+  #     Resource:
+  #       - Fn::Join:
+  #           - ":"
+  #           - - arn:aws:elasticfilesystem
+  #             - ${self:provider.region}
+  #             - Ref: "AWS::AccountId"
+  #             - access-point/${self:custom.accessPointId}
 
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - "elasticfilesystem:ClientMount"
-        - "elasticfilesystem:ClientWrite"
-      Resource:
-        - Fn::Join:
-            - ":"
-            - - arn:aws:elasticfilesystem
-              - ${self:provider.region}
-              - Ref: "AWS::AccountId"
-              - access-point/${self:custom.accessPointId}
+# custom:
+#   sgId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.LambdaSecurityGroupId}
+#   subnetId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.SubnetId}
+#   fsId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemId}
+#   accessPointId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemAccessPointId}
+#   mountPath: /mnt/data
 
-custom:
-  sgId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.LambdaSecurityGroupId}
-  subnetId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.SubnetId}
-  fsId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemId}
-  accessPointId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemAccessPointId}
-  mountPath: /mnt/data
-
-  # on Progress🚀
-  # https://github.com/serverless/serverless/issues/7848
-  # fileSystemConfig:
-  #   - fileSystemId: ${self:custom.fsId}
-  #     accessPointId: ${self:custom.accessPointId}
-  #     mountPath: ${self:custom.MOUNT_PATH}
+# on Progress🚀
+# https://github.com/serverless/serverless/issues/7848
+# fileSystemConfig:
+#   - fileSystemId: ${self:custom.fsId}
+#     accessPointId: ${self:custom.accessPointId}
+#     mountPath: ${self:custom.MOUNT_PATH}
 
 functions:
   tile:
     handler: dist/tile.handler
     events:
       - http:
-          path: /{z}/{x}/{y}.mvt
+          path: /{z}/{x}/{y}
           method: get
           integration: lambda-proxy
           cors:
