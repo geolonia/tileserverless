@@ -6,7 +6,6 @@ export const handler = (
   context: AWSLambda.Context,
   callback: AWSLambda.Callback
 ) => {
-  console.log(event, context);
   // validate path params
   if (!event.pathParameters || !event.pathParameters.proxy) {
     return callback(null, errorResponse(400, "invalid Parameters."));

@@ -1,7 +1,9 @@
 import { handler } from "./metadata";
 
 const noop = {} as AWSLambda.Context;
-const event = {} as AWSLambda.APIGatewayProxyEvent;
+const event = {
+  requestContext: { domainName: "localhost", stage: test },
+} as any;
 
 test("should return a metadata with 200", (done) => {
   handler(event, noop, (_0, res) => {
