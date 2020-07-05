@@ -65,3 +65,6 @@ typings/
 
 /dist
 .serverless
+
+# use yarn only
+package-lock.json
