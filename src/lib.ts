@@ -46,7 +46,7 @@ export const getTile = (z: string, x: string, y: string) => {
 export const getMetadata = () => {
   return new Promise<object>((resolve, reject) => {
     const db = new sqlite3.Database(
-      path.resolve(__dirname, "..", "data", "poi.mbtiles"),
+      path.resolve(__dirname, "..", "data", "nps.mbtiles"),
       sqlite3.OPEN_READONLY
     );
 
