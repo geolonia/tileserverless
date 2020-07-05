@@ -1,10 +1,11 @@
 import { errorResponse, getMetadata } from "./lib";
 
 export const handler = (
-  _0: AWSLambda.APIGatewayProxyEvent,
+  event: AWSLambda.APIGatewayProxyEvent,
   _1: AWSLambda.Context,
   callback: AWSLambda.Callback
 ) => {
+  const { domainName, stage } = event.requestContext;
   getMetadata()
     .then((metadata) => {
       return callback(null, {
@@ -16,7 +17,10 @@ export const handler = (
           "Access-Control-Allow-Headers": "Content-Type",
           "X-Frame-Options": "SAMEORIGIN",
         },
-        body: JSON.stringify(metadata),
+        body: JSON.stringify({
+          ...metadata,
+          tiles: [`https://${domainName}/${stage}/{z}/{x}/{y}.mvt`],
+        }),
       });
     })
     .catch((error) => {
