@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "test": "jest",
+    "start": "npm run build && sls offline --printOutput",
     "build": "tsc",
     "deploy:network": "sls deploy --config ./serverless-network.yml",
     "deploy:storage": "sls deploy --config ./serverless-storage.yml",
@@ -35,6 +36,7 @@
     "aws-sdk": "^2.701.0",
     "jest": "^26.1.0",
     "serverless": "^1.73.1",
+    "serverless-offline": "^6.4.0",
     "ts-jest": "^26.1.1",
     "ts-node": "^8.10.2",
     "typescript": "^3.9.5"

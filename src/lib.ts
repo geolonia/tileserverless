@@ -83,3 +83,15 @@ export const gzip = (buf: Buffer) => {
     });
   });
 };
+
+export const gunzip = (buf: Buffer) => {
+  return new Promise<Buffer>((resolve, reject) => {
+    zlib.unzip(buf, (error, data) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(data);
+      }
+    });
+  });
+};

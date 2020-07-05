@@ -1,4 +1,3 @@
-import AWSLambda from "aws-lambda";
 import { errorResponse, getMetadata } from "./lib";
 
 export const handler = (
@@ -6,10 +5,9 @@ export const handler = (
   _1: AWSLambda.Context,
   callback: AWSLambda.Callback
 ) => {
-  // SQL Injection Free
   getMetadata()
     .then((metadata) => {
-      callback(null, {
+      return callback(null, {
         statusCode: 200,
         headers: {
           "Content-Type": "application/json",
@@ -23,6 +21,6 @@ export const handler = (
     })
     .catch((error) => {
       console.error(error);
-      callback(null, errorResponse(500, "Internal Server Error."));
+      return callback(null, errorResponse(500, "Internal Server Error."));
     });
 };

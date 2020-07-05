@@ -1,5 +1,4 @@
-import AWSLambda from "aws-lambda";
-import { errorResponse, getTile, gzip } from "./lib";
+import { errorResponse, getTile, gzip, gunzip } from "./lib";
 
 export const handler = (
   event: AWSLambda.APIGatewayProxyEvent,
@@ -21,29 +20,22 @@ export const handler = (
 
   // SQL Injection Free
   getTile(z, x, y)
-    .then(gzip)
+    .then(gunzip)
     .then((data) => {
-      // NOTE: 空の Buffer を Gzip すると20バイトほどのデータになるので条件分岐の意味がない。
-      // 空の Buffer を返すときに Gzip されている方がいいのか、検討する
-      if (data.length > 0) {
-        callback(null, {
-          statusCode: 200,
-          headers: {
-            "Content-Type": "application/vnd.mapbox-vector-tile",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, HEAD",
-            "Access-Control-Allow-Headers": "Content-Type",
-            "Content-Encoding": "gzip",
-            "X-Frame-Options": "SAMEORIGIN",
-          },
-          body: data,
-        });
-      } else {
-        // TODO: 多分 200 として空の結果を返すように統合する
-        callback(null, errorResponse(404, "not Found"));
-      }
+      return callback(null, {
+        statusCode: 200,
+        headers: {
+          "Content-Type": "application/vnd.mapbox-vector-tile; charset=UTF-8",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, HEAD",
+          "Access-Control-Allow-Headers": "Content-Type",
+          // "Content-Encoding": "gzip",
+          "X-Frame-Options": "SAMEORIGIN",
+        },
+        body: data.toString("utf-8"),
+      });
     })
     .catch(() => {
-      callback(null, errorResponse(500, "Internal Server Error."));
+      return callback(null, errorResponse(500, "Internal Server Error."));
     });
 };
