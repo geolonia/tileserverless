@@ -16,7 +16,7 @@ const sqlite3 = Sqlite3.verbose();
 export const getTile = (z: string, x: string, y: string) => {
   return new Promise<Buffer>((resolve, reject) => {
     const db = new sqlite3.Database(
-      path.resolve(__dirname, "..", "data", "poi.mbtiles"),
+      path.resolve(__dirname, "..", "data", "nps.mbtiles"),
       sqlite3.OPEN_READONLY
     );
 
