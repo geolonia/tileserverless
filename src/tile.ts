@@ -33,7 +33,7 @@ export const handler = (
 
   // SQL Injection Free
   getTile(z, x, y)
-    // .then(gunzip)
+    .then(gzip)
     .then((data) => {
       return callback(null, {
         statusCode: 200,
@@ -42,7 +42,7 @@ export const handler = (
           "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Methods": "GET, HEAD",
           "Access-Control-Allow-Headers": "Content-Type",
-          // "Content-Encoding": "gzip",
+          "Content-Encoding": "gzip",
           "X-Frame-Options": "SAMEORIGIN",
         },
         body: data.toString("utf-8"),
