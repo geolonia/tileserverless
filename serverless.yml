@@ -63,18 +63,7 @@ functions:
     handler: dist/tile.handler
     events:
       - http:
-          path: /tile/{proxy+}
-          method: get
-          integration: lambda-proxy
-          cors:
-            origin: "*"
-            maxAge: 86400
-
-  metadata:
-    handler: dist/metadata.handler
-    events:
-      - http:
-          path: /tiles.json
+          path: /{proxy+}
           method: get
           integration: lambda-proxy
           cors:

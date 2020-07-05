@@ -1,14 +1,20 @@
 import { errorResponse, getTile, gzip, gunzip } from "./lib";
+import { handler as metadataHandler } from "./metadata";
 
 export const handler = (
   event: AWSLambda.APIGatewayProxyEvent,
-  _1: AWSLambda.Context,
+  context: AWSLambda.Context,
   callback: AWSLambda.Callback
 ) => {
   // validate path params
   if (!event.pathParameters || !event.pathParameters.proxy) {
     return callback(null, errorResponse(400, "invalid Parameters."));
   }
+  // get tiles.json
+  if (event.pathParameters.proxy === "tiles.json") {
+    return metadataHandler(event, context, callback);
+  }
+
   const match = event.pathParameters.proxy.match(
     /^(?<z>[0-9]+)\/(?<x>[0-9]+)\/(?<y>[0-9]+)\.mvt$/
   );
