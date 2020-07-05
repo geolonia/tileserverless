@@ -63,7 +63,7 @@ functions:
     handler: dist/tile.handler
     events:
       - http:
-          path: /{z}/{x}/{y}.mvt
+          path: /tile/{proxy+}
           method: get
           integration: lambda-proxy
           cors:

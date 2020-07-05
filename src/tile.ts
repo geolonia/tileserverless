@@ -6,10 +6,17 @@ export const handler = (
   callback: AWSLambda.Callback
 ) => {
   // validate path params
-  if (!event.pathParameters) {
+  if (!event.pathParameters || !event.pathParameters.proxy) {
     return callback(null, errorResponse(400, "invalid Parameters."));
   }
-  const { z, x, y } = event.pathParameters;
+  const match = event.pathParameters.proxy.match(
+    /^(?<z>[0-9]+)\/(?<x>[0-9]+)\/(?<y>[0-9]+)\.mvt$/
+  );
+  if (!match) {
+    return callback(null, errorResponse(400, "invalid Parameters."));
+  }
+  const { x, y, z } = match.groups as { x: string; y: string; z: string };
+
   const invalidTileXYZ = [x, y, z].every((val) => {
     const num = parseInt(val, 10);
     return Number.isNaN(num) || num < 0;

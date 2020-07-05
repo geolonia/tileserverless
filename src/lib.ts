@@ -30,11 +30,11 @@ export const getTile = (z: string, x: string, y: string) => {
         (error, rows) => {
           if (error) {
             reject(error);
-          } else if (rows.length === 1) {
+          } else if (rows.length > 0) {
             resolve(rows[0].tile_data);
           } else {
-            // Empty response
-            resolve(Buffer.from(""));
+            // empty response
+            gzip(Buffer.from("")).then(resolve);
           }
         }
       );
