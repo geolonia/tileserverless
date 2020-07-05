@@ -88,6 +88,7 @@ export const gunzip = (buf: Buffer) => {
   return new Promise<Buffer>((resolve, reject) => {
     zlib.unzip(buf, (error, data) => {
       if (error) {
+        console.error(error);
         reject(error);
       } else {
         resolve(data);

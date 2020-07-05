@@ -27,7 +27,7 @@ export const handler = (
 
   // SQL Injection Free
   getTile(z, x, y)
-    .then(gunzip)
+    // .then(gunzip)
     .then((data) => {
       return callback(null, {
         statusCode: 200,
@@ -42,7 +42,8 @@ export const handler = (
         body: data.toString("utf-8"),
       });
     })
-    .catch(() => {
+    .catch((error) => {
+      console.error(error);
       return callback(null, errorResponse(500, "Internal Server Error."));
     });
 };
