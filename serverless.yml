@@ -4,6 +4,7 @@ frameworkVersion: ">=1.73.0 <2.0.0"
 
 plugins:
   - serverless-offline
+  - serverless-plugin-custom-binary
 
 package:
   exclude:
@@ -44,12 +45,15 @@ provider:
   #             - Ref: "AWS::AccountId"
   #             - access-point/${self:custom.accessPointId}
 
-# custom:
-#   sgId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.LambdaSecurityGroupId}
-#   subnetId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.SubnetId}
-#   fsId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemId}
-#   accessPointId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemAccessPointId}
-#   mountPath: /mnt/data
+custom:
+  #   sgId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.LambdaSecurityGroupId}
+  #   subnetId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.SubnetId}
+  #   fsId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemId}
+  #   accessPointId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemAccessPointId}
+  #   mountPath: /mnt/data
+  apiGateway:
+    binaryMediaTypes:
+      - "application/x-protobuf"
 
 # on Progress🚀
 # https://github.com/serverless/serverless/issues/7848
@@ -66,6 +70,7 @@ functions:
           path: /{proxy+}
           method: get
           integration: lambda-proxy
+          contentHandling: CONVERT_TO_BINARY
           cors:
             origin: "*"
             maxAge: 86400

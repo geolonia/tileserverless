@@ -1,5 +1,9 @@
-import { errorResponse, getTile, gzip, gunzip } from "./lib";
-import { handler as metadataHandler } from "./metadata";
+import { errorResponse, isGzipped } from "./lib";
+import zlib from "zlib";
+
+// @ts-ignore
+import MBTiles from "@mapbox/mbtiles";
+import path from "path";
 
 export const handler = (
   event: AWSLambda.APIGatewayProxyEvent,
@@ -10,11 +14,10 @@ export const handler = (
   if (!event.pathParameters || !event.pathParameters.proxy) {
     return callback(null, errorResponse(400, "invalid Parameters."));
   }
-  // get tiles.json
-  if (event.pathParameters.proxy === "tiles.json") {
-    return metadataHandler(event, context, callback);
-  }
-
+  // proxy tiles.json
+  // if (event.pathParameters.proxy === "tiles.json") {
+  //   return metadataHandler(event, context, callback);
+  // }
   const match = event.pathParameters.proxy.match(
     /^(?<z>[0-9]+)\/(?<x>[0-9]+)\/(?<y>[0-9]+)\.mvt$/
   );
@@ -31,25 +34,33 @@ export const handler = (
     return callback(null, errorResponse(400, "invalid Parameters."));
   }
 
-  // SQL Injection Free
-  getTile(z, x, y)
-    .then(gzip)
-    .then((data) => {
-      return callback(null, {
-        statusCode: 200,
-        headers: {
-          "Content-Type": "application/vnd.mapbox-vector-tile; charset=UTF-8",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET, HEAD",
-          "Access-Control-Allow-Headers": "Content-Type",
-          "Content-Encoding": "gzip",
-          "X-Frame-Options": "SAMEORIGIN",
-        },
-        body: data.toString("utf-8"),
-      });
-    })
-    .catch((error) => {
-      console.error(error);
-      return callback(null, errorResponse(500, "Internal Server Error."));
-    });
+  new MBTiles(
+    path.resolve(__dirname, "..", "data", "nps.mbtiles"),
+    (error: any, mbtiles: any) => {
+      if (error) {
+        console.error(error);
+        return callback(null, errorResponse(500, "Internal Server Error."));
+      } else {
+        mbtiles.getTile(z, x, y, (error: any, data: any, headers: any) => {
+          if (error) {
+            console.error(error);
+            return callback(null, errorResponse(204, "Not found"));
+          } else {
+            return callback(null, {
+              statusCode: 200,
+              headers: {
+                "Content-Type": "application/x-protobuf",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, HEAD",
+                "Access-Control-Allow-Headers": "Content-Type",
+                "Content-Encoding": "identity",
+                "X-Frame-Options": "SAMEORIGIN",
+              },
+              body: data,
+            });
+          }
+        });
+      }
+    }
+  );
 };
