@@ -39,6 +39,7 @@ export const handler = (
   return new MBTiles(
     path.resolve(__dirname, "..", "data", "nps.mbtiles"),
     (error: any, mbtiles: any) => {
+      console.log(5);
       if (error) {
         console.error(error);
         return callback(null, errorResponse(500, "Internal Server Error."));
