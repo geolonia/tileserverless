@@ -10,6 +10,7 @@ export const handler = (
   context: AWSLambda.Context,
   callback: AWSLambda.Callback
 ) => {
+  console.log(event, 1);
   // validate path params
   if (!event.pathParameters || !event.pathParameters.proxy) {
     return callback(null, errorResponse(400, "invalid Parameters."));
@@ -21,11 +22,12 @@ export const handler = (
   const match = event.pathParameters.proxy.match(
     /^(?<z>[0-9]+)\/(?<x>[0-9]+)\/(?<y>[0-9]+)\.mvt$/
   );
+  console.log(2);
   if (!match) {
     return callback(null, errorResponse(400, "invalid Parameters."));
   }
   const { x, y, z } = match.groups as { x: string; y: string; z: string };
-
+  console.log(3);
   const invalidTileXYZ = [x, y, z].every((val) => {
     const num = parseInt(val, 10);
     return Number.isNaN(num) || num < 0;
@@ -33,8 +35,8 @@ export const handler = (
   if (invalidTileXYZ) {
     return callback(null, errorResponse(400, "invalid Parameters."));
   }
-
-  new MBTiles(
+  console.log(4);
+  return new MBTiles(
     path.resolve(__dirname, "..", "data", "nps.mbtiles"),
     (error: any, mbtiles: any) => {
       if (error) {
