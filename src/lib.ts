@@ -4,6 +4,7 @@ import zlib from "zlib";
 export const errorResponse = (statusCode: number, message: string) => ({
   statusCode,
   headers: {
+    "Access-Control-Allow-Origin": "*",
     "Content-Type": "text/plain",
   },
   body: message,

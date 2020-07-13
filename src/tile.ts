@@ -54,10 +54,10 @@ export const handler = (
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Methods": "GET, HEAD",
                 "Access-Control-Allow-Headers": "Content-Type",
-                // "Content-Encoding": "gzip",
+                // "Content-Encoding": "", // API Gateway should encode the body following Accept-Encoding header
                 "X-Frame-Options": "SAMEORIGIN",
               },
-              body: data.toString("utf-8"),
+              body: zlib.gzipSync(data.toString("utf-8")).toString("utf-8"),
             });
           }
         });
