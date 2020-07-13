@@ -57,7 +57,7 @@ export const handler = (
                 // "Content-Encoding": "", // API Gateway should encode the body following Accept-Encoding header
                 "X-Frame-Options": "SAMEORIGIN",
               },
-              body: zlib.gzipSync(data).toString("utf-8"),
+              body: data.toString("utf-8"),
             });
           }
         });
