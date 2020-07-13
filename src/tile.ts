@@ -54,10 +54,10 @@ export const handler = (
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Methods": "GET, HEAD",
                 "Access-Control-Allow-Headers": "Content-Type",
-                "Content-Encoding": "gzip",
+                // "Content-Encoding": "gzip",
                 "X-Frame-Options": "SAMEORIGIN",
               },
-              body: zlib.gzipSync(data).toString("utf-8"),
+              body: data.toString("utf-8"),
             });
           }
         });
