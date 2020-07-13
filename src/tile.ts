@@ -57,7 +57,7 @@ export const handler = (
                 "Content-Encoding": "gzip",
                 "X-Frame-Options": "SAMEORIGIN",
               },
-              body: data,
+              body: data.toString("utf-8"),
             });
           }
         });
