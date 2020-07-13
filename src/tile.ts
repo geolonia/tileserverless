@@ -10,15 +10,16 @@ export const handler = (
   context: AWSLambda.Context,
   callback: AWSLambda.Callback
 ) => {
-  console.log(event, 1);
   // validate path params
   if (!event.pathParameters || !event.pathParameters.proxy) {
     return callback(null, errorResponse(400, "invalid Parameters."));
   }
+
   // proxy tiles.json
   // if (event.pathParameters.proxy === "tiles.json") {
   //   return metadataHandler(event, context, callback);
   // }
+
   const match = event.pathParameters.proxy.match(
     /^(?<z>[0-9]+)\/(?<x>[0-9]+)\/(?<y>[0-9]+)\.mvt$/
   );
@@ -35,28 +36,25 @@ export const handler = (
   if (invalidTileXYZ) {
     return callback(null, errorResponse(400, "invalid Parameters."));
   }
-  console.log(4);
   return new MBTiles(
     path.resolve(__dirname, "..", "data", "nps.mbtiles"),
     (error: any, mbtiles: any) => {
-      console.log(5);
       if (error) {
         console.error(error);
-        return callback(null, errorResponse(500, "Internal Server Error."));
+        return callback(null, errorResponse(500, "Unknown error"));
       } else {
         mbtiles.getTile(z, x, y, (error: any, data: any, headers: any) => {
           if (error) {
-            console.error(error);
             return callback(null, errorResponse(204, "Not found"));
           } else {
             return callback(null, {
               statusCode: 200,
               headers: {
-                "Content-Type": "application/x-protobuf",
+                "Content-Type": "application/vnd.mapbox-vector-tile",
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Methods": "GET, HEAD",
                 "Access-Control-Allow-Headers": "Content-Type",
-                "Content-Encoding": "identity",
+                "Content-Encoding": "gzip",
                 "X-Frame-Options": "SAMEORIGIN",
               },
               body: data,
