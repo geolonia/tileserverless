@@ -72,30 +72,10 @@ functions:
     handler: dist/tile.handler
     events:
       - http:
-          path: /{proxy+}
+          path: /tiles/{proxy+}
           method: get
           integration: lambda-proxy
           # contentHandling: CONVERT_TO_BINARY
           cors:
             origin: "*"
             maxAge: 86400
-  # helloSync:
-  #   handler: dist/hello.syncHandler
-  #   events:
-  #     - http:
-  #         path: /hello-sync
-  #         method: get
-  #         integration: lambda-proxy
-  #         cors:
-  #           origin: "*"
-  #           maxAge: 86400
-  # helloAsync:
-  #   handler: dist/hello.asyncHandler
-  #   events:
-  #     - http:
-  #         path: /hello-async
-  #         method: get
-  #         integration: lambda-proxy
-  #         cors:
-  #           origin: "*"
-  #           maxAge: 86400
