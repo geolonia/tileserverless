@@ -34,6 +34,7 @@
     "@types/jest": "^26.0.3",
     "@types/sqlite3": "^3.1.6",
     "aws-sdk": "^2.701.0",
+    "axios": "^0.19.2",
     "jest": "^26.1.0",
     "serverless": "^1.73.1",
     "serverless-apigw-binary": "^0.4.4",
