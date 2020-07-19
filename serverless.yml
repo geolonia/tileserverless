@@ -64,9 +64,9 @@ functions:
     handler: dist/tile.handler
     events:
       - http:
-          path: /tiles/{xyz+}
+          path: tiles/{z}/{x}/{y}
           method: get
-          integration: lambda
+          # integration: lambda
           response:
             contentHandling: CONVERT_TO_BINARY
             headers:

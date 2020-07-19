@@ -7,6 +7,7 @@ type Event = {
 };
 
 export const handler = async (event: any, context: AWSLambda.Context) => {
+  console.log(event)
   // validate path params
   if (!event.path || !event.path.xyz) {
     throw errorResponse(400, "invalid Parameters.");
