@@ -2,6 +2,9 @@ service: tileserverless
 
 frameworkVersion: ">=1.75.1 <2.0.0"
 
+plugins:
+  - serverless-content-encoding
+
 package:
   exclude:
     - .git/**
@@ -20,9 +23,8 @@ provider:
   region: ap-northeast-1
   apiGateway:
     binaryMediaTypes:
-      - "*/*"
-      # - "application/x-protobuf"
-      # - "application/vnd.mapbox-vector-tile"
+      - "application/x-protobuf"
+      - "application/vnd.mapbox-vector-tile"
 
   stage: dev
   # vpc:
@@ -52,6 +54,9 @@ provider:
 #   fsId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemId}
 #   accessPointId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemAccessPointId}
 #   mountPath: /mnt/data
+custom:
+  contentEncoding:
+    minimumCompressionSize: 0
 
 # on Progress🚀
 # https://github.com/serverless/serverless/issues/7848
@@ -67,5 +72,30 @@ functions:
       - http:
           path: tiles/{proxy+}
           method: get
+          integration: lambda
           response:
             contentHandling: CONVERT_TO_BINARY
+            200:
+              pattern: ".*"
+            204:
+              pattern: "作ってるところ"
+            header:
+              "Content-Type": "application/vnd.mapbox-vector-tile"
+              "Access-Control-Allow-Origin": "*"
+              "Access-Control-Allow-Methods": "GET, HEAD"
+              "Access-Control-Allow-Headers": "Content-Type"
+              "X-Frame-Options": "SAMEORIGIN"
+
+  test:
+    handler: dist/single.handler
+    events:
+      - http:
+          path: single
+          method: get
+          integration: lambda
+          response:
+            contentHandling: CONVERT_TO_BINARY
+            200:
+              pattern: ".*"
+            header:
+              "Content-Type": "application/x-protobuf"
