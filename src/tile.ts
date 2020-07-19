@@ -12,6 +12,7 @@ export const handler = async (event: Event, context: AWSLambda.Context) => {
   console.log(event);
   // validate path params
   if (!event.path || !event.path.z || !event.path.x || !event.path.y) {
+    console.log(1);
     throw errorResponse(400, "invalid Parameters.");
   }
 
@@ -22,6 +23,7 @@ export const handler = async (event: Event, context: AWSLambda.Context) => {
 
   const match = event.path.y.match(/^(?<y>[0-9]+)\.mvt$/);
   if (!match) {
+    console.log(2, match);
     throw errorResponse(400, "invalid Parameters.");
   }
   const { x, y, z } = event.path;
@@ -30,6 +32,7 @@ export const handler = async (event: Event, context: AWSLambda.Context) => {
     return Number.isNaN(num) || num < 0;
   });
   if (invalidTileXYZ) {
+    console.log(3);
     throw errorResponse(400, "invalid Parameters.");
   }
 
@@ -37,6 +40,7 @@ export const handler = async (event: Event, context: AWSLambda.Context) => {
   try {
     tile_data = await getTile(z, x, y);
   } catch (error) {
+    console.log(4, error);
     return JSON.stringify({ statusCode: 204, body: { message: "no content" } });
   }
 
