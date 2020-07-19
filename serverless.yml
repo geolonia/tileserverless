@@ -67,6 +67,8 @@ functions:
           path: tiles/{proxy+}
           method: get
           integration: lambda
+          cors:
+            origin: "*"
           response:
             200:
               pattern: ""
