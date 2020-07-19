@@ -11,8 +11,10 @@ export const handler = (
   context: AWSLambda.Context,
   callback: AWSLambda.Callback
 ) => {
+  console.log(event);
   // validate path params
   if (!event.pathParameters || !event.pathParameters.proxy) {
+    console.log(1);
     return callback(null, errorResponse(400, "invalid Parameters."));
   }
 
@@ -25,6 +27,7 @@ export const handler = (
     /^(?<z>[0-9]+)\/(?<x>[0-9]+)\/(?<y>[0-9]+)\.mvt$/
   );
   if (!match) {
+    console.log(2, match);
     return callback(null, errorResponse(400, "invalid Parameters."));
   }
   const { x, y, z } = match.groups as { x: string; y: string; z: string };

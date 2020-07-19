@@ -12,7 +12,6 @@ package:
     - yarn.lock
     - README.md
     - serverless-*.yml
-    - data
 
 provider:
   name: aws
