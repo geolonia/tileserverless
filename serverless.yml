@@ -79,7 +79,7 @@ functions:
               pattern: ".*"
             204:
               pattern: "作ってるところ"
-            header:
+            headers:
               "Content-Type": "application/vnd.mapbox-vector-tile"
               "Access-Control-Allow-Origin": "*"
               # "Access-Control-Allow-Methods": "GET, HEAD"
@@ -97,5 +97,5 @@ functions:
             contentHandling: CONVERT_TO_BINARY
             200:
               pattern: ".*"
-            header:
+            headers:
               "Content-Type": "application/x-protobuf"
