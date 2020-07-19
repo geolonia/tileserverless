@@ -76,8 +76,8 @@ functions:
           response:
             contentHandling: CONVERT_TO_BINARY
             headers:
-              "Content-Type": "application/vnd.mapbox-vector-tile"
-              "Access-Control-Allow-Origin": "*"
+              "Content-Type": "'application/vnd.mapbox-vector-tile'"
+              "Access-Control-Allow-Origin": "'*''"
             200:
               pattern: ".*"
             204:
