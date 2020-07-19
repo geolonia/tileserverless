@@ -1,15 +1,17 @@
 import { errorResponse, getTile } from "./lib";
 
 type Event = {
-  path: {
-    xyz: string;
+  path?: {
+    z?: string;
+    x?: string;
+    y?: string;
   };
 };
 
-export const handler = async (event: any, context: AWSLambda.Context) => {
-  console.log(event)
+export const handler = async (event: Event, context: AWSLambda.Context) => {
+  console.log(event);
   // validate path params
-  if (!event.path || !event.path.xyz) {
+  if (!event.path || !event.path.z || !event.path.x || !event.path.y) {
     throw errorResponse(400, "invalid Parameters.");
   }
 
@@ -18,13 +20,11 @@ export const handler = async (event: any, context: AWSLambda.Context) => {
   //   return metadataHandler(event, context, callback);
   // }
 
-  const match = event.path.xyz.match(
-    /^(?<z>[0-9]+)\/(?<x>[0-9]+)\/(?<y>[0-9]+)\.mvt$/
-  );
+  const match = event.path.y.match(/^(?<y>[0-9]+)\.mvt$/);
   if (!match) {
     throw errorResponse(400, "invalid Parameters.");
   }
-  const { x, y, z } = match.groups as { x: string; y: string; z: string };
+  const { x, y, z } = event.path;
   const invalidTileXYZ = [x, y, z].every((val) => {
     const num = parseInt(val, 10);
     return Number.isNaN(num) || num < 0;
