@@ -20,8 +20,9 @@ provider:
   region: ap-northeast-1
   apiGateway:
     binaryMediaTypes:
-      - "application/x-protobuf"
-      - "application/vnd.mapbox-vector-tile"
+      - "*/*"
+      # - "application/x-protobuf"
+      # - "application/vnd.mapbox-vector-tile"
 
   stage: dev
   # vpc:
