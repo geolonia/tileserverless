@@ -7,18 +7,18 @@ import MBTiles from "@mapbox/mbtiles";
 import path from "path";
 
 export const handler = (
-  event: { path?: { proxy?: string } },
+  event: { pathParameters?: { proxy?: string } },
   context: AWSLambda.Context,
   callback: AWSLambda.Callback
 ) => {
   console.log(event);
   // validate path params
-  if (!event.path || !event.path.proxy) {
+  if (!event.pathParameters || !event.pathParameters.proxy) {
     console.log(1);
     return callback(null, errorResponse(400, "invalid Parameters."));
   }
 
-  const match = event.path.proxy.match(
+  const match = event.pathParameters.proxy.match(
     /^(?<z>[0-9]+)\/(?<x>[0-9]+)\/(?<y>[0-9]+)\.mvt$/
   );
   if (!match) {
