@@ -64,7 +64,7 @@ functions:
     handler: dist/tile.handler
     events:
       - http:
-          path: tiles/{z}/{x}/{y}
+          path: tiles/{xyz+}
           method: get
           integration: lambda
           response:
