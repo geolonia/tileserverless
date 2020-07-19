@@ -65,7 +65,7 @@ functions:
     handler: dist/tile.handler
     events:
       - http:
-          path: tiles/{propxy+}
+          path: tiles/{proxy+}
           method: get
-          integration: lambda-proxy
+          integration: lambda
           contentHandling: CONVERT_TO_BINARY
