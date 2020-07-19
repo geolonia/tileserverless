@@ -7,23 +7,18 @@ import MBTiles from "@mapbox/mbtiles";
 import path from "path";
 
 export const handler = (
-  event: AWSLambda.APIGatewayProxyEvent,
+  event: { path?: { proxy?: string } },
   context: AWSLambda.Context,
   callback: AWSLambda.Callback
 ) => {
   console.log(event);
   // validate path params
-  if (!event.pathParameters || !event.pathParameters.proxy) {
+  if (!event.path || !event.path.proxy) {
     console.log(1);
     return callback(null, errorResponse(400, "invalid Parameters."));
   }
 
-  // proxy tiles.json
-  // if (event.pathParameters.proxy === "tiles.json") {
-  //   return metadataHandler(event, context, callback);
-  // }
-
-  const match = event.pathParameters.proxy.match(
+  const match = event.path.proxy.match(
     /^(?<z>[0-9]+)\/(?<x>[0-9]+)\/(?<y>[0-9]+)\.mvt$/
   );
   if (!match) {
