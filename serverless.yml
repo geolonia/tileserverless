@@ -68,4 +68,7 @@ functions:
           path: tiles/{proxy+}
           method: get
           integration: lambda
-          contentHandling: CONVERT_TO_BINARY
+          response:
+            200:
+              pattern: ""
+              contentHandling: CONVERT_TO_BINARY
