@@ -4,7 +4,6 @@ frameworkVersion: ">=1.73.0 <2.0.0"
 
 plugins:
   - serverless-offline
-  - serverless-content-encoding
 
 package:
   exclude:

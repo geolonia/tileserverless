@@ -1,3 +1,5 @@
+// NOTE: これは Lambda-proxy のハンドラ
+
 import { errorResponse, isGzipped } from "./lib";
 import zlib from "zlib";
 import fs from "fs";
