@@ -31,5 +31,5 @@ export const handler = async (
     throw errorResponse(400, "invalid Parameters.");
   }
 
-  return await getTile(z, x, y);
+  return (await getTile(z, x, y)).toString("base64");
 };
