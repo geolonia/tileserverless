@@ -37,8 +37,8 @@ jobs:
           if [ $CIRCLE_TAG ]; then
             echo 'no deploy currently'
           else
-            npx sls deploy function tiles
-            # npm run deploy:app
+            # npx sls deploy function tiles
+            npm run deploy:app
           fi
 
 workflows:
