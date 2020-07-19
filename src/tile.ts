@@ -45,20 +45,18 @@ export const handler = (
           if (error) {
             return callback(null, errorResponse(204, "Not found"));
           } else {
-            return callback(null, {
-              statusCode: 200,
-              headers: {
-                "Content-Type": "application/vnd.mapbox-vector-tile",
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET, HEAD",
-                "Access-Control-Allow-Headers": "Content-Type",
-                "X-Frame-Options": "SAMEORIGIN",
-              },
-              body: data.toString(),
-            });
+            return callback(null, data.toString("base64"));
           }
         });
       }
     }
   );
 };
+
+// {
+//                 "Content-Type": "application/vnd.mapbox-vector-tile",
+//                 "Access-Control-Allow-Origin": "*",
+//                 "Access-Control-Allow-Methods": "GET, HEAD",
+//                 "Access-Control-Allow-Headers": "Content-Type",
+//                 "X-Frame-Options": "SAMEORIGIN",
+//               }
