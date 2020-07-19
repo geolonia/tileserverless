@@ -82,9 +82,9 @@ functions:
             header:
               "Content-Type": "application/vnd.mapbox-vector-tile"
               "Access-Control-Allow-Origin": "*"
-              "Access-Control-Allow-Methods": "GET, HEAD"
-              "Access-Control-Allow-Headers": "Content-Type"
-              "X-Frame-Options": "SAMEORIGIN"
+              # "Access-Control-Allow-Methods": "GET, HEAD"
+              # "Access-Control-Allow-Headers": "Content-Type"
+              # "X-Frame-Options": "SAMEORIGIN"
 
   test:
     handler: dist/single.handler

@@ -10,7 +10,6 @@ export const handler = async (
   event: { path?: { proxy?: string } },
   context: AWSLambda.Context
 ) => {
-  console.log(event);
   // validate path params
   if (!event.path || !event.path.proxy) {
     throw errorResponse(400, "invalid Parameters.");
@@ -20,9 +19,9 @@ export const handler = async (
     /^(?<z>[0-9]+)\/(?<x>[0-9]+)\/(?<y>[0-9]+)\.mvt$/
   );
   if (!match) {
-    console.log(2, match);
     throw errorResponse(400, "invalid Parameters.");
   }
+
   const { x, y, z } = match.groups as { x: string; y: string; z: string };
   const invalidTileXYZ = [x, y, z].every((val) => {
     const num = parseInt(val, 10);
