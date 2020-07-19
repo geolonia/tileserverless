@@ -1,19 +1,19 @@
-import { errorResponse, getTile } from "./lib";
+// NOTE: これは Lambda-proxy のハンドラ
 
-type Event = {
-  path?: {
-    z?: string;
-    x?: string;
-    y?: string;
-  };
-};
+import { errorResponse } from "./lib";
 
-export const handler = async (event: Event, context: AWSLambda.Context) => {
-  console.log(event);
+// @ts-ignore
+import MBTiles from "@mapbox/mbtiles";
+import path from "path";
+
+export const handler = (
+  event: AWSLambda.APIGatewayProxyEvent,
+  context: AWSLambda.Context,
+  callback: AWSLambda.Callback
+) => {
   // validate path params
-  if (!event.path || !event.path.z || !event.path.x || !event.path.y) {
-    console.log(1);
-    throw errorResponse(400, "invalid Parameters.");
+  if (!event.pathParameters || !event.pathParameters.proxy) {
+    return callback(null, errorResponse(400, "invalid Parameters."));
   }
 
   // proxy tiles.json
@@ -21,37 +21,46 @@ export const handler = async (event: Event, context: AWSLambda.Context) => {
   //   return metadataHandler(event, context, callback);
   // }
 
-  const match = event.path.y.match(/^(?<y>[0-9]+)\.mvt$/);
+  const match = event.pathParameters.proxy.match(
+    /^(?<z>[0-9]+)\/(?<x>[0-9]+)\/(?<y>[0-9]+)\.mvt$/
+  );
   if (!match) {
-    console.log(2, match);
-    throw errorResponse(400, "invalid Parameters.");
+    return callback(null, errorResponse(400, "invalid Parameters."));
   }
-  const { x, y, z } = event.path;
+  const { x, y, z } = match.groups as { x: string; y: string; z: string };
   const invalidTileXYZ = [x, y, z].every((val) => {
     const num = parseInt(val, 10);
     return Number.isNaN(num) || num < 0;
   });
   if (invalidTileXYZ) {
-    console.log(3);
-    throw errorResponse(400, "invalid Parameters.");
+    return callback(null, errorResponse(400, "invalid Parameters."));
   }
 
-  let tile_data: Buffer;
-  try {
-    tile_data = await getTile(z, x, y);
-  } catch (error) {
-    console.log(4, error);
-    return JSON.stringify({ statusCode: 204, body: { message: "no content" } });
-  }
-
-  return tile_data.toString("utf-8");
+  return new MBTiles(
+    path.resolve(__dirname, "..", "data", "nps.mbtiles"),
+    (error: any, mbtiles: any) => {
+      if (error) {
+        console.error(error);
+        return callback(null, errorResponse(500, "Unknown error"));
+      } else {
+        mbtiles.getTile(z, x, y, (error: any, data: any, headers: any) => {
+          if (error) {
+            return callback(null, errorResponse(204, "Not found"));
+          } else {
+            return callback(null, {
+              statusCode: 200,
+              headers: {
+                "Content-Type": "application/vnd.mapbox-vector-tile",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, HEAD",
+                "Access-Control-Allow-Headers": "Content-Type",
+                "X-Frame-Options": "SAMEORIGIN",
+              },
+              body: data.toString(),
+            });
+          }
+        });
+      }
+    }
+  );
 };
-
-// headers: {
-//   "Content-Type": "application/vnd.mapbox-vector-tile",
-//   "Access-Control-Allow-Origin": "*",
-//   "Access-Control-Allow-Methods": "GET, HEAD",
-//   "Access-Control-Allow-Headers": "Content-Type",
-//   // "Content-Encoding": "", // API Gateway should encode the body following Accept-Encoding header
-//   "X-Frame-Options": "SAMEORIGIN",
-// },

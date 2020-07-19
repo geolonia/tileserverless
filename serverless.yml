@@ -12,6 +12,7 @@ package:
     - yarn.lock
     - README.md
     - serverless-*.yml
+    - data
 
 provider:
   name: aws
@@ -64,21 +65,7 @@ functions:
     handler: dist/tile.handler
     events:
       - http:
-          path: tiles/{xyz+}
+          path: tiles/{propxy+}
           method: get
-          integration: lambda
-          response:
-            contentHandling: CONVERT_TO_BINARY
-            headers:
-              Access-Control-Allow-Origin: "*"
-            statusCodes:
-              200:
-                pattern: ""
-              204:
-                pattern: '.*"statusCode" *: *204.*'
-                template: |
-                  #set ($obj = $util.parseJson($input.path('$.errorMessage')))
-                  { "message" : "$obj.body.message" }
-          cors:
-            origin: "*"
-            maxAge: 86400
+          integration: lambda-proxy
+          contentHandling: CONVERT_TO_BINARY
