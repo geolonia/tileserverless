@@ -73,4 +73,4 @@ functions:
           response:
             200:
               pattern: ""
-              contentHandling: CONVERT_TO_BINARY
+            contentHandling: CONVERT_TO_BINARY
