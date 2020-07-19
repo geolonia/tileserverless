@@ -46,11 +46,11 @@ provider:
   #             - access-point/${self:custom.accessPointId}
 
 # custom:
-  #   sgId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.LambdaSecurityGroupId}
-  #   subnetId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.SubnetId}
-  #   fsId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemId}
-  #   accessPointId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemAccessPointId}
-  #   mountPath: /mnt/data
+#   sgId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.LambdaSecurityGroupId}
+#   subnetId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.SubnetId}
+#   fsId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemId}
+#   accessPointId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemAccessPointId}
+#   mountPath: /mnt/data
 
 # on Progress🚀
 # https://github.com/serverless/serverless/issues/7848
@@ -66,7 +66,7 @@ functions:
       - http:
           path: tiles/{z}/{x}/{y}
           method: get
-          # integration: lambda
+          integration: lambda
           response:
             contentHandling: CONVERT_TO_BINARY
             headers:
