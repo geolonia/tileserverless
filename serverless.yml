@@ -75,16 +75,13 @@ functions:
           integration: lambda
           response:
             contentHandling: CONVERT_TO_BINARY
-            200:
-              pattern: ".*"
-            204:
-              pattern: "作ってるところ"
             headers:
               "Content-Type": "application/vnd.mapbox-vector-tile"
               "Access-Control-Allow-Origin": "*"
-              # "Access-Control-Allow-Methods": "GET, HEAD"
-              # "Access-Control-Allow-Headers": "Content-Type"
-              # "X-Frame-Options": "SAMEORIGIN"
+            200:
+              pattern: ".*"
+            204:
+              pattern: '.*"statusCode":204,.*'
 
   test:
     handler: dist/single.handler
@@ -95,7 +92,6 @@ functions:
           integration: lambda
           response:
             contentHandling: CONVERT_TO_BINARY
-            200:
-              pattern: ".*"
             headers:
-              "Content-Type": "application/x-protobuf"
+              Content-Type: "'application/vnd.mapbox-vector-tile'"
+              Access-Control-Allow-Origin: "'*''"

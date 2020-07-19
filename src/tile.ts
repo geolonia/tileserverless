@@ -31,5 +31,11 @@ export const handler = async (
     throw errorResponse(400, "invalid Parameters.");
   }
 
-  return (await getTile(z, x, y)).toString("base64");
+  try {
+    return (await getTile(z, x, y)).toString("base64");
+  } catch (error) {
+    return Buffer.from(
+      JSON.stringify({ statusCode: 204, message: "no content" })
+    ).toString("base64");
+  }
 };
