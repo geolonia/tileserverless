@@ -1,9 +1,6 @@
 service: tileserverless
 
-frameworkVersion: ">=1.73.0 <2.0.0"
-
-plugins:
-  - serverless-offline
+frameworkVersion: ">=1.75.1 <2.0.0"
 
 package:
   exclude:
@@ -21,8 +18,6 @@ provider:
   runtime: nodejs12.x
   memorySize: 128
   region: ap-northeast-1
-  logs:
-    restApi: true
   apiGateway:
     binaryMediaTypes:
       - "application/x-protobuf"
@@ -50,14 +45,12 @@ provider:
   #             - Ref: "AWS::AccountId"
   #             - access-point/${self:custom.accessPointId}
 
-custom:
+# custom:
   #   sgId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.LambdaSecurityGroupId}
   #   subnetId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.SubnetId}
   #   fsId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemId}
   #   accessPointId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemAccessPointId}
   #   mountPath: /mnt/data
-  contentEncoding:
-    minimumCompressionSize: 0
 
 # on Progress🚀
 # https://github.com/serverless/serverless/issues/7848
