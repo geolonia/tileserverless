@@ -25,6 +25,7 @@ export const handler = async (event: { path?: { proxy?: string } }) => {
   try {
     return (await getTile(z, x, y)).toString("base64");
   } catch (error) {
+    console.log(error)
     return Buffer.from(
       JSON.stringify({ statusCode: 204, message: "no content" })
     ).toString("base64");

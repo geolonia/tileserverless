@@ -3,7 +3,7 @@ import MBTiles from "@mapbox/mbtiles";
 
 const mbtilesPath = (process.env.MOUNT_PATH as string) + "/tiles.mbtiles";
 
-export const errorResponse = (statusCode: number, message: string) => ({
+export const errorResponse = (statusCode: number, message: string) => JSON.stringify({
   statusCode,
   headers: {
     "Access-Control-Allow-Origin": "*",
