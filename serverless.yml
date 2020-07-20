@@ -57,7 +57,7 @@ custom:
   # fsId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemId}
   accessPointId: fsap-02adce03df935f140
   #accessPointId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemAccessPointId}
-  mountPath: /mnt/mbtiles
+  mountPath: /mnt/efs
   contentEncoding:
     minimumCompressionSize: 0
 
