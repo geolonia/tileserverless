@@ -9,6 +9,7 @@ package:
   exclude:
     - .git/**
     - src/**
+    - docs/**
     - .*
     - tsconfig.*
     - package-lock.json
