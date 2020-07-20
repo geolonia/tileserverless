@@ -61,7 +61,19 @@ custom:
   contentEncoding:
     minimumCompressionSize: 0
 
-
+resources:
+  extensions:
+    TileLambdaFunction:
+      Properties:
+        FileSystemConfigs:
+          - Arn:
+              Fn::Join:
+                - ":"
+                - - arn:aws:elasticfilesystem
+                  - ${self:provider.region}
+                  - Ref: "AWS::AccountId"
+                  - access-point/${self:custom.accessPointId}
+            LocalMountPath: ${self:custom.MOUNT_PATH}
 
 functions:
   tile:
