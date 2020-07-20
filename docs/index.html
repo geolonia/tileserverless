@@ -19,6 +19,7 @@
     }
   </style>
 </head>
+              "url": "https://geolonia.github.io/tileserverless/tiles.json"
 
 <body>
   <div id="map"></div>
@@ -37,7 +38,9 @@
             "geolonia": {
               "type": "vector",
               "minzoom": 6,
-              "url": "https://geolonia.github.io/tileserverless/tiles.json"
+              "tiles": [
+                "https://n8b05qfxt8.execute-api.us-east-1.amazonaws.com/dev/tiles/{z}/{x}/{y}.mvt"
+              ]
             }
           },
           "sprite": "https://sprites.geolonia.com/basic",
@@ -3512,94 +3515,6 @@
         }
       })
 
-
-
-      // var map = new window.geolonia.Map("#map");
-      // map.on("load", function () {
-      //   map.addSource("nps", {
-      //     type: "vector",
-      //     url: "http://127.0.0.1:8080/docs/tiles.json",
-      //     // "https://7xs5pbp7sg.execute-api.ap-northeast-1.amazonaws.com/dev/tiles.json",
-      //     // url: "https://kamataryo.github.io/nationalpark-mvt/tiles.json",
-      //   });
-      //   map.addLayer({
-      //     id: "contour",
-      //     type: "line",
-      //     source: "nps",
-      //     "source-layer": "nps",
-      //     paint: {
-      //       "line-color": "gray",
-      //       "line-opacity": 0.4,
-      //     },
-      //   });
-
-      //   map.addLayer({
-      //     id: "普通地域",
-      //     type: "fill",
-      //     source: "nps",
-      //     "source-layer": "nps",
-      //     filter: ["all", ["==", ["get", "地域区"], "普通地域"]],
-      //     paint: {
-      //       "fill-color": "cyan",
-      //       "fill-opacity": 0.4,
-      //     },
-      //   });
-      //   map.addLayer({
-      //     id: "第1種特別地域",
-      //     type: "fill",
-      //     source: "nps",
-      //     "source-layer": "nps",
-      //     filter: ["all", ["==", ["get", "地域区"], "第1種特別地域"]],
-      //     paint: {
-      //       "fill-color": "purple",
-      //       "fill-opacity": 0.4,
-      //     },
-      //   });
-      //   map.addLayer({
-      //     id: "第2種特別地域",
-      //     type: "fill",
-      //     source: "nps",
-      //     "source-layer": "nps",
-      //     filter: ["all", ["==", ["get", "地域区"], "第2種特別地域"]],
-      //     paint: {
-      //       "fill-color": "red",
-      //       "fill-opacity": 0.4,
-      //     },
-      //   });
-      //   map.addLayer({
-      //     id: "第3種特別地域",
-      //     type: "fill",
-      //     source: "nps",
-      //     "source-layer": "nps",
-      //     filter: ["all", ["==", ["get", "地域区"], "第3種特別地域"]],
-      //     paint: {
-      //       "fill-color": "lightgreen",
-      //       "fill-opacity": 0.4,
-      //     },
-      //   });
-      //   map.addLayer({
-      //     id: "海域公園地区",
-      //     type: "fill",
-      //     source: "nps",
-      //     "source-layer": "nps",
-      //     filter: ["all", ["==", ["get", "地域区"], "海域公園地区"]],
-      //     paint: {
-      //       "fill-color": "blue",
-      //       "fill-opacity": 0.4,
-      //     },
-      //   });
-      //   map.addLayer({
-      //     id: "特別保護地区",
-      //     type: "fill",
-      //     source: "nps",
-      //     "source-layer": "nps",
-      //     filter: ["all", ["==", ["get", "地域区"], "特別保護地区"]],
-      //     paint: {
-      //       "fill-color": "yellow",
-      //       "fill-opacity": 0.4,
-      //     },
-      //   });
-      // });
   </script>
 </body>
 
