@@ -73,7 +73,7 @@ resources:
                   - ${self:provider.region}
                   - Ref: "AWS::AccountId"
                   - access-point/${self:custom.accessPointId}
-            LocalMountPath: ${self:custom.MOUNT_PATH}
+            LocalMountPath: ${self:custom.mountPath}
 
 functions:
   tile:
