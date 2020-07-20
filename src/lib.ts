@@ -1,7 +1,8 @@
 // @ts-ignore
 import MBTiles from "@mapbox/mbtiles";
+import fs from 'fs'
 
-const mbtilesPath = (process.env.MOUNT_PATH as string) + "/tiles.mbtiles";
+const mbtilesPath = process.env.MOUNT_PATH! + "/tiles.mbtiles";
 
 export const errorResponse = (statusCode: number, message: string) => JSON.stringify({
   statusCode,
@@ -18,6 +19,12 @@ export const getTile = (
   y: number | string
 ) => {
   return new Promise<Buffer>((resolve, reject) => {
+
+    const dirs = fs.readdirSync(process.env.MOUNT_PATH!)
+    console.log(dirs)
+    const stat = fs.statSync(mbtilesPath)
+    console.log(JSON.stringify(stat))
+
     return new MBTiles(mbtilesPath, (error: any, mbtiles: any) => {
       if (error) {
         reject(error);
