@@ -1,15 +1,6 @@
-// NOTE: これは Lambda-proxy のハンドラ
-
 import { errorResponse, getTile } from "./lib";
 
-// @ts-ignore
-import MBTiles from "@mapbox/mbtiles";
-import path from "path";
-
-export const handler = async (
-  event: { path?: { proxy?: string } },
-  context: AWSLambda.Context
-) => {
+export const handler = async (event: { path?: { proxy?: string } }) => {
   // validate path params
   if (!event.path || !event.path.proxy) {
     throw errorResponse(400, "invalid Parameters.");

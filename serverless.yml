@@ -27,43 +27,41 @@ provider:
       - "application/vnd.mapbox-vector-tile"
 
   stage: dev
-  # vpc:
-  #   securityGroupIds:
-  #     - ${self:custom.sgId}
-  #   subnetIds:
-  #     - ${self:custom.subnetId}
-  # environment:
-  #   MOUNT_PATH: ${self:custom.mountPath}
-  #
-  # iamRoleStatements:
-  #   - Effect: Allow
-  #     Action:
-  #       - "elasticfilesystem:ClientMount"
-  #       - "elasticfilesystem:ClientWrite"
-  #     Resource:
-  #       - Fn::Join:
-  #           - ":"
-  #           - - arn:aws:elasticfilesystem
-  #             - ${self:provider.region}
-  #             - Ref: "AWS::AccountId"
-  #             - access-point/${self:custom.accessPointId}
+  vpc:
+    securityGroupIds:
+      - ${self:custom.sgId}
+    subnetIds:
+      - ${self:custom.subnetId}
+  environment:
+    MOUNT_PATH: ${self:custom.mountPath}
 
-# custom:
-#   sgId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.LambdaSecurityGroupId}
-#   subnetId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.SubnetId}
-#   fsId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemId}
-#   accessPointId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemAccessPointId}
-#   mountPath: /mnt/data
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - "elasticfilesystem:ClientMount"
+        - "elasticfilesystem:ClientWrite"
+      Resource:
+        - Fn::Join:
+            - ":"
+            - - arn:aws:elasticfilesystem
+              - ${self:provider.region}
+              - Ref: "AWS::AccountId"
+              - access-point/${self:custom.accessPointId}
+
 custom:
+  sgId: sg-022276ed626586a61
+  # sgId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.LambdaSecurityGroupId}
+  subnetId: subnet-9487bf9b
+  # subnetId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.SubnetId}
+  fsId: fs-6f0c08ec
+  # fsId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemId}
+  accessPointId: fsap-02adce03df935f140
+  #accessPointId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemAccessPointId}
+  mountPath: /mnt/mbtiles
   contentEncoding:
     minimumCompressionSize: 0
 
-# on Progress🚀
-# https://github.com/serverless/serverless/issues/7848
-# fileSystemConfig:
-#   - fileSystemId: ${self:custom.fsId}
-#     accessPointId: ${self:custom.accessPointId}
-#     mountPath: ${self:custom.MOUNT_PATH}
+
 
 functions:
   tile:
@@ -82,16 +80,3 @@ functions:
               pattern: ".*"
             204:
               pattern: '.*"statusCode":204,.*'
-
-  test:
-    handler: dist/single.handler
-    events:
-      - http:
-          path: single
-          method: get
-          integration: lambda
-          response:
-            contentHandling: CONVERT_TO_BINARY
-            headers:
-              Content-Type: "'application/vnd.mapbox-vector-tile'"
-              Access-Control-Allow-Origin: "'*''"
