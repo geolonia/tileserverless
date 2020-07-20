@@ -20,10 +20,12 @@ export const getTile = (
   return new Promise<Buffer>((resolve, reject) => {
     const dirs = fs.readdirSync(process.env.MOUNT_PATH!);
     console.log(dirs);
-    const stat = fs.statSync(mbtilesPath);
-    console.log(mbtilesPath, JSON.stringify(stat));
+    const stat1 = fs.statSync(mbtilesPath);
+    console.log({ mbtilesPath, stat1 });
+    const stat2 = fs.statSync(testTextPath);
+    console.log({ testTextPath, stat2 });
     const text = fs.readFileSync(testTextPath, { encoding: "utf-8" });
-    console.log(testTextPath, text);
+    console.log(text);
 
     return new MBTiles(mbtilesPath, (error: any, mbtiles: any) => {
       if (error) {
