@@ -42,12 +42,7 @@ provider:
         - "elasticfilesystem:ClientMount"
         - "elasticfilesystem:ClientWrite"
       Resource:
-        - Fn::Join:
-            - ":"
-            - - arn:aws:elasticfilesystem
-              - ${self:provider.region}
-              - Ref: "AWS::AccountId"
-              - access-point/${self:custom.accessPointId}
+        - ${self:custom.efsApArn}
 
 custom:
   sgId: sg-022276ed626586a61
@@ -55,6 +50,13 @@ custom:
   fsId: fs-6f0c08ec
   accessPointId: fsap-02adce03df935f140
   mountPath: /mnt/efs
+  efsApArn:
+    Fn::Join:
+      - ":"
+      - - arn:aws:elasticfilesystem
+        - ${self:provider.region}
+        - Ref: "AWS::AccountId"
+        - access-point/${self:custom.accessPointId}
   contentEncoding:
     minimumCompressionSize: 0
 
@@ -63,13 +65,12 @@ resources:
     TileLambdaFunction:
       Properties:
         FileSystemConfigs:
-          - Arn:
-              Fn::Join:
-                - ":"
-                - - arn:aws:elasticfilesystem
-                  - ${self:provider.region}
-                  - Ref: "AWS::AccountId"
-                  - access-point/${self:custom.accessPointId}
+          - Arn: ${self:custom.efsApArn}
+            LocalMountPath: ${self:custom.mountPath}
+    MetaLambdaFunction:
+      Properties:
+        FileSystemConfigs:
+          - Arn: ${self:custom.efsApArn}
             LocalMountPath: ${self:custom.mountPath}
 
 functions:
@@ -100,4 +101,3 @@ functions:
           path: tiles.json
           method: get
           integration: lambda-proxy
-
