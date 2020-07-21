@@ -37,7 +37,7 @@ jobs:
             echo 'no deploy currently'
           else
             # npx sls deploy function tiles
-            npm run deploy:app
+            npm run deploy:dev
           fi
 
 workflows:
