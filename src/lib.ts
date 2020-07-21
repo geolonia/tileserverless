@@ -14,10 +14,12 @@ export const getInfo = () => {
   return new Promise((resolve, reject) => {
     return new MBTiles(mbtilesPath, (error: any, mbtiles: any) => {
       if (error) {
+        console.error(1, { error });
         reject(error);
       } else {
         mbtiles.getInfo((error: any, data: any) => {
           if (error) {
+            console.error(2, { error });
             reject(error);
           } else {
             resolve(data);
