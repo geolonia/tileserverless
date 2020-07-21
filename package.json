@@ -6,14 +6,9 @@
   "license": "MIT",
   "scripts": {
     "test": "jest",
-    "start": "npm run build && sls offline --printOutput",
     "build": "tsc",
-    "deploy:network": "sls deploy --config ./serverless-network.yml",
-    "deploy:storage": "sls deploy --config ./serverless-storage.yml",
-    "deploy:app": "npm run build && sls deploy",
-    "remove:app": "sls remove",
-    "remove:storage": "sls remove --config ./serverless-storage.yml",
-    "remove:network": "sls remove --config ./serverless-network.yml"
+    "deploy:dev": "npm run build && sls deploy --stage:dev",
+    "remove:dev": "sls remove --stage=dev"
   },
   "jest": {
     "moduleFileExtensions": [

@@ -10,6 +10,24 @@ export const errorResponse = (statusCode: number, message: string) =>
     body: { message },
   });
 
+export const getInfo = () => {
+  return new Promise((resolve, reject) => {
+    return new MBTiles(mbtilesPath, (error: any, mbtiles: any) => {
+      if (error) {
+        reject(error);
+      } else {
+        mbtiles.getInfo((error: any, data: any) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(data);
+          }
+        });
+      }
+    });
+  });
+};
+
 export const getTile = (
   z: number | string,
   x: number | string,

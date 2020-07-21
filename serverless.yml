@@ -15,7 +15,7 @@ package:
     - package-lock.json
     - yarn.lock
     - README.md
-    - serverless-*.yml
+    - serverless.yml
 
 provider:
   name: aws
@@ -51,13 +51,9 @@ provider:
 
 custom:
   sgId: sg-022276ed626586a61
-  # sgId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.LambdaSecurityGroupId}
   subnetId: subnet-9487bf9b
-  # subnetId: ${cf:tileserverless-network-${opt:stage, self:provider.stage}.SubnetId}
   fsId: fs-6f0c08ec
-  # fsId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemId}
   accessPointId: fsap-02adce03df935f140
-  #accessPointId: ${cf:tileserverless-storage-${opt:stage, self:provider.stage}.FileSystemAccessPointId}
   mountPath: /mnt/efs
   contentEncoding:
     minimumCompressionSize: 0
@@ -97,3 +93,11 @@ functions:
                 template: |
                   #set ($obj = $util.parseJson($input.path('$.errorMessage')))
                   { "message" : "$obj.body.message" }
+  meta:
+    handler: dist/meta.handler
+    events:
+      - http:
+          path: tiles.json
+          method: get
+          integration: lambda-proxy
+
