@@ -11,13 +11,14 @@ export const errorResponse = (statusCode: number, message: string) =>
   });
 
 export const getInfo = () => {
-  return new Promise((resolve, reject) => {
+  return new Promise<object>((resolve, reject) => {
     return new MBTiles(mbtilesPath, (error: any, mbtiles: any) => {
+      console.log({ mbtilesPath });
       if (error) {
-        console.error(1, { error });
+        console.error(1, { error, mbtilesPath });
         reject(error);
       } else {
-        mbtiles.getInfo((error: any, data: any) => {
+        mbtiles.getInfo((error: any, data: object) => {
           if (error) {
             console.error(2, { error });
             reject(error);
@@ -37,6 +38,7 @@ export const getTile = (
 ) => {
   return new Promise<Buffer>((resolve, reject) => {
     return new MBTiles(mbtilesPath, (error: any, mbtiles: any) => {
+      console.log({ mbtilesPath });
       if (error) {
         reject(error);
       } else {
