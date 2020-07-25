@@ -86,8 +86,7 @@ functions:
           method: get
           integration: lambda
           caching:
-            enabled: true
-            ttlInSeconds: 600
+            enabled: false
           response:
             contentHandling: CONVERT_TO_BINARY
             headers:
