@@ -86,7 +86,9 @@ functions:
           method: get
           integration: lambda
           caching:
-            enabled: false
+            enabled: true
+            cacheKeyParameters:
+              - name: request.path.proxy
           response:
             contentHandling: CONVERT_TO_BINARY
             headers:
