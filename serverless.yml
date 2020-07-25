@@ -93,7 +93,11 @@ functions:
             contentHandling: CONVERT_TO_BINARY
             headers:
               "Content-Type": "'application/vnd.mapbox-vector-tile'"
+              "Cache-Control": "'max-age=3600'"
               "Access-Control-Allow-Origin": "'*'"
+              "X-Frame-Options": "'SAMEORIGIN'"
+              "Access-Control-Allow-Methods": "'GET, HEAD'"
+              "Access-Control-Allow-Headers": "'Content-Type'"
             statusCodes:
               400:
                 pattern: '.*"status" *: *400.*'
