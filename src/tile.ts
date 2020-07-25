@@ -27,7 +27,7 @@ export const handler = async (event: Event, context: any, callback: any) => {
   try {
     return callback(null, (await getTile(z, x, y)).toString("base64"));
   } catch (error) {
-    console.log(error);
+    console.log(error, errorResponse(204, ""));
     return callback(errorResponse(204, ""));
   }
 };
