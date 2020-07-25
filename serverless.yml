@@ -4,7 +4,7 @@ frameworkVersion: ">=1.75.1 <2.0.0"
 
 plugins:
   - serverless-content-encoding
-  - serverless-api-gateway-caching
+  # - serverless-api-gateway-caching
 
 package:
   exclude:
@@ -61,8 +61,8 @@ custom:
   # plugin configs
   contentEncoding:
     minimumCompressionSize: 0
-  apiGatewayCaching:
-    enabled: true
+  # apiGatewayCaching:
+  #   enabled: true
 
 resources:
   extensions:
@@ -85,10 +85,10 @@ functions:
           path: tiles/{proxy+}
           method: get
           integration: lambda
-          caching:
-            enabled: true
-            cacheKeyParameters:
-              - name: request.path.proxy
+          # caching:
+          #   enabled: true
+          #   cacheKeyParameters:
+          #     - name: request.path.proxy
           response:
             contentHandling: CONVERT_TO_BINARY
             headers:
