@@ -4,10 +4,10 @@ import zlib from "zlib";
 
 const mbtilesPath = process.env.MOUNT_PATH! + "/tiles.mbtiles";
 
-export const errorResponse = (statusCode: number, message: string) =>
+export const errorResponse = (status: number, message: string) =>
   JSON.stringify({
-    statusCode,
-    body: { message },
+    status,
+    body: status === 204 ? undefined : { message },
   });
 
 export const getInfo = () => {
