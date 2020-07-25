@@ -5,10 +5,12 @@ import zlib from "zlib";
 const mbtilesPath = process.env.MOUNT_PATH! + "/tiles.mbtiles";
 
 export const errorResponse = (status: number, message: string) =>
-  JSON.stringify({
-    status,
-    body: status === 204 ? undefined : { message },
-  });
+  Buffer.from(
+    JSON.stringify({
+      status,
+      message: status === 204 ? "" : message,
+    })
+  ).toString("base64");
 
 export const getInfo = () => {
   return new Promise<object>((resolve, reject) => {
