@@ -4864,6 +4864,16 @@ lodash.flatten@^4.4.0:
   resolved "https://registry.yarnpkg.com/lodash.flatten/-/lodash.flatten-4.4.0.tgz#f31c22225a9632d2bbf8e4addbef240aa765a61f"
   integrity sha1-8xwiIlqWMtK7+OSt2+8kCqdlph8=
 
+lodash.get@^4.4.2:
+  version "4.4.2"
+  resolved "https://registry.yarnpkg.com/lodash.get/-/lodash.get-4.4.2.tgz#2d177f652fa31e939b4438d5341499dfa3825e99"
+  integrity sha1-LRd/ZS+jHpObRDjVNBSZ36OCXpk=
+
+lodash.isempty@^4.4.0:
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/lodash.isempty/-/lodash.isempty-4.4.0.tgz#6f86cbedd8be4ec987be9aaf33c9684db1b31e7e"
+  integrity sha1-b4bL7di+TsmHvpqvM8loTbGzHn4=
+
 lodash.isplainobject@^4.0.6:
   version "4.0.6"
   resolved "https://registry.yarnpkg.com/lodash.isplainobject/-/lodash.isplainobject-4.0.6.tgz#7c526a52d89b45c45cc690b88163be0497f550cb"
@@ -4878,6 +4888,11 @@ lodash.sortby@^4.7.0:
   version "4.7.0"
   resolved "https://registry.yarnpkg.com/lodash.sortby/-/lodash.sortby-4.7.0.tgz#edd14c824e2cc9c1e0b0a1b42bb5210516a42438"
   integrity sha1-7dFMgk4sycHgsKG0K7UhBRakJDg=
+
+lodash.split@^4.4.0:
+  version "4.4.2"
+  resolved "https://registry.yarnpkg.com/lodash.split/-/lodash.split-4.4.2.tgz#a7f7bd9f37968b9312428e2f3ac3fb3173c4c3c6"
+  integrity sha1-p/e9nzeWi5MSQo4vOsP7MXPEw8Y=
 
 lodash.union@^4.6.0:
   version "4.6.0"
@@ -6374,6 +6389,15 @@ semver@~5.3.0:
   version "5.3.0"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.3.0.tgz#9b2ce5d3de02d17c6012ad326aa6b4d0cf54f94f"
   integrity sha1-myzl094C0XxgEq0yaqa00M9U+U8=
+
+serverless-api-gateway-caching@^1.4.1:
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/serverless-api-gateway-caching/-/serverless-api-gateway-caching-1.4.1.tgz#20c145ef58b78449e997aef4afd5ae5e75272c1c"
+  integrity sha512-IdNjfHue3i26paV1QufNMTV43qHVSeUBrJZ35npLSw3yRK6RT1i+/TDid3r9XfQS4Pbl8t6voPC/WxoMRbvPlw==
+  dependencies:
+    lodash.get "^4.4.2"
+    lodash.isempty "^4.4.0"
+    lodash.split "^4.4.0"
 
 serverless-content-encoding@^1.1.0:
   version "1.1.0"

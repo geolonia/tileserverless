@@ -41,6 +41,7 @@
     "aws-sdk": "^2"
   },
   "dependencies": {
-    "@mapbox/mbtiles": "^0.12.1"
+    "@mapbox/mbtiles": "^0.12.1",
+    "serverless-api-gateway-caching": "^1.4.1"
   }
 }
