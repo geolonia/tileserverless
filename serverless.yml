@@ -87,11 +87,6 @@ functions:
               "Content-Type": "'application/vnd.mapbox-vector-tile'"
               "Access-Control-Allow-Origin": "'*'"
             statusCodes:
-              204:
-                pattern: '.*"status" *: *204.*'
-                template: |
-                  #set ($obj = $util.parseJson($input.path('$.errorMessage')))
-                  { "message" : "$obj.message" }
               400:
                 pattern: '.*"status" *: *400.*'
                 template: |

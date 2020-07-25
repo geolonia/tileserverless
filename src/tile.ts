@@ -29,7 +29,5 @@ export const handler = async (event: Event, context: any, callback: any) => {
   } catch (error) {
     // No content
     return callback(null, "");
-    // console.log(error, errorResponse(204, ""));
-    // return callback(errorResponse(204, ""));
   }
 };

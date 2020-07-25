@@ -19,7 +19,7 @@ jobs:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "yarn.lock" }}
-      # - run: npm test
+      # - run: npm test # Currently no tests
       - persist_to_workspace:
           root: .
           paths:
@@ -34,9 +34,8 @@ jobs:
           at: .
       - run: |
           if [ $CIRCLE_TAG ]; then
-            echo 'no deploy currently'
+            npm run deploy:v1
           else
-            # npx sls deploy function tiles
             npm run deploy:dev
           fi
 
