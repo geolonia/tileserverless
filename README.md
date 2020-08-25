@@ -10,24 +10,11 @@ $ cd tileserverless
 $ yarn
 $ cp .envrc.sample .envrc
 $ vi .envrc
-$ npm run deploy:network
-$ npm run deploy:storage
-$ npm run deploy:app
+$ npm run deploy:dev
 ```
 
-And update The fileSystem mount configuration manually.
-
-## Run function
+## Removal
 
 ```shell
-$ npx sls invoke -f write -d '{"name": "kamata"}'
-$ npx sls invoke -f read
-```
-
-## removal
-
-```shell
-$ npm run remove:app
-$ npm run remove:storage
-$ npm run remove:network
+$ npm run remove:dev
 ```
