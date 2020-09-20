@@ -36,6 +36,7 @@ provider:
       - ${self:custom.subnetId}
   environment:
     MOUNT_PATH: ${self:custom.mountPath}
+    DEFAULT_MBTILES_FILENAME: ${self:custom.defaultMbtilesFilename}
 
   iamRoleStatements:
     - Effect: Allow
@@ -51,6 +52,7 @@ custom:
   fsId: fs-6f0c08ec
   accessPointId: fsap-02adce03df935f140
   mountPath: /mnt/efs
+  defaultMbtilesFilename: tiles.mbtiles
   efsApArn:
     Fn::Join:
       - ":"

@@ -1,4 +1,4 @@
-import { errorResponse, getTile } from "./lib";
+import { errorResponse, parseTilePath, getTile } from "./lib";
 
 type Event = { path?: { proxy?: string } };
 
@@ -8,21 +8,13 @@ export const handler = async (event: Event, context: any, callback: any) => {
     return callback(errorResponse(400, "invalid Parameters."));
   }
 
-  const match = event.path.proxy.match(
-    /^(?<z>[0-9]+)\/(?<x>[0-9]+)\/(?<y>[0-9]+)\.mvt$/
-  );
+  const match = parseTilePath(event.path.proxy);
+
   if (!match) {
     return callback(errorResponse(400, "invalid Parameters."));
   }
 
-  const { x, y, z } = match.groups as { x: string; y: string; z: string };
-  const invalidTileXYZ = [x, y, z].every((val) => {
-    const num = parseInt(val, 10);
-    return Number.isNaN(num) || num < 0;
-  });
-  if (invalidTileXYZ) {
-    return callback(errorResponse(400, "invalid Parameters."));
-  }
+  const { x, y, z } = match;
 
   try {
     return callback(null, (await getTile(z, x, y)).toString("base64"));
