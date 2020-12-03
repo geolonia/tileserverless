@@ -1,6 +1,15 @@
 # Tileserverless
 
-A Serverless Tile Server.
+A Serverless Tile Server Kit.
+
+## Prerequisite
+
+- AWS resource
+    - EFS
+    - Security Group for EFS (Allow TCP 2049 from the Lambda)
+    - VPC for EFS
+
+- MBTiles should be uploaded as tiles.mbtiles` at the EFS
 
 ## Deploy
 
