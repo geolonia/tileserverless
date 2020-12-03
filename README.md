@@ -1,6 +1,6 @@
-# tileserverless
+# Tileserverless
 
-A Serverless Tile Server Kit.
+A Serverless Tile Server.
 
 ## Deploy
 

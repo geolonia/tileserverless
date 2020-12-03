@@ -1,10 +1,9 @@
 service: tileserverless
 
-frameworkVersion: ">=1.75.1 <2.0.0"
+frameworkVersion: ">=2.14.0 <3.0.0"
 
 plugins:
   - serverless-content-encoding
-  # - serverless-api-gateway-caching
 
 package:
   exclude:
@@ -27,6 +26,7 @@ provider:
     binaryMediaTypes:
       - "application/x-protobuf"
       - "application/vnd.mapbox-vector-tile"
+    shouldStartNameWithService: true # serverless@^2
 
   stage: dev
   vpc:
@@ -47,10 +47,10 @@ provider:
         - ${self:custom.efsApArn}
 
 custom:
-  sgId: sg-022276ed626586a61
-  subnetId: subnet-9487bf9b
-  fsId: fs-6f0c08ec
-  accessPointId: fsap-02adce03df935f140
+  sgId: ${env:TILESERVERLESS_SECURITY_GROUP_ID}
+  subnetId: ${env:TILESERVERLESS_SUBNET_ID}
+  accessPointId: ${env:TILESERVERLESS_FILESYSTEM_ACCESS_POINT_ID}
+  fsId: ${env:TILESERVERLESS_FILESYSTEM_ID}
   mountPath: /mnt/efs
   defaultMbtilesFilename: tiles.mbtiles
   efsApArn:
@@ -60,11 +60,10 @@ custom:
         - ${self:provider.region}
         - Ref: "AWS::AccountId"
         - access-point/${self:custom.accessPointId}
+
   # plugin configs
   contentEncoding:
     minimumCompressionSize: 0
-  # apiGatewayCaching:
-  #   enabled: true
 
 resources:
   extensions:
@@ -87,10 +86,6 @@ functions:
           path: tiles/{proxy+}
           method: get
           integration: lambda
-          # caching:
-          #   enabled: true
-          #   cacheKeyParameters:
-          #     - name: request.path.proxy
           response:
             contentHandling: CONVERT_TO_BINARY
             headers:
@@ -113,4 +108,3 @@ functions:
       - http:
           path: tiles.json
           method: get
-          integration: lambda-proxy
