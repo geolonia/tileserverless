@@ -1,73 +1,116 @@
 // @ts-ignore
 import MBTiles from "@mapbox/mbtiles";
 import zlib from "zlib";
-const { MOUNT_PATH, DEFAULT_MBTILES_FILENAME } = process.env;
+import { promises as dns } from "dns";
+import { APIGatewayProxyEventPathParameters } from "aws-lambda";
+const { MOUNT_PATH, TILES_VERSION_DNS_NAME } = process.env;
 
-export const errorResponse = (status: number, message: string) =>
-  JSON.stringify({
+interface VersionCacheEntry {
+  expires: number
+  value: string
+}
+
+const VERSION_CACHE: { [key: string]: VersionCacheEntry } = {}
+
+export const errorResponse = (status: number, message: string) => ({
+  statusCode: status,
+  isBase64Encoded: false,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
     status,
     message: status === 204 ? "" : message,
-  });
+  })
+});
 
-export const parseTilePath = (proxy: string) => {
-  const match = proxy.match(/^(?<z>[0-9]+)\/(?<x>[0-9]+)\/(?<y>[0-9]+)\.mvt$/);
-  if (!match) {
-    return null;
-  }
+export const parseTilePath = (params?: APIGatewayProxyEventPathParameters) => {
+  if (!params) return null;
 
-  const { x, y, z } = match.groups as {
-    x: string;
-    y: string;
-    z: string;
-  };
+  const { x, y, z } = params;
   const invalidTileXYZ = [x, y, z].every((val) => {
+    if (!val) return false;
     const num = parseInt(val, 10);
     return Number.isNaN(num) || num < 0;
   });
   if (invalidTileXYZ) {
     return null;
   }
-  return { x, y, z };
+  // At this point, we know that all x, y, and z exist.
+  return { x, y, z } as { x: string, y: string, z: string };
 };
 
-export const getInfo = () => {
-  const mbtilesPath = `${MOUNT_PATH}/${DEFAULT_MBTILES_FILENAME}`;
+export const getMbtilesFilename = async (version: string) => {
+  const now = new Date().getTime();
+  const cachedEntry = VERSION_CACHE[version];
+  if (cachedEntry && cachedEntry.expires >= now) {
+    return cachedEntry.value;
+  }
+
+  const match = version.match(/^[a-zA-Z0-9-]+$/);
+  if (!match) {
+    return null;
+  }
+
+  try {
+    const records = await dns.resolveTxt(`${version}-tiles.${TILES_VERSION_DNS_NAME}`);
+    const joined = records.map(r => r.join(''));
+    for (let i = 0; i < joined.length; i++) {
+      const element = joined[i];
+      const match = element.match(/^tsls-file-name=([a-zA-Z0-9-_]+.mbtiles)$/);
+      if (!match) {
+        continue;
+      }
+      VERSION_CACHE[version] = {
+        expires: (new Date().getTime()) + 300_000, // 5 minutes
+        value: match[1],
+      }
+      return match[1];
+    }
+  } catch (e) {
+    return null;
+  }
+  return null;
+};
+
+export const getInfo = (filename: string) => {
+  const mbtilesPath = `${MOUNT_PATH}/${filename}`;
   return new Promise<object>((resolve, reject) => {
     return new MBTiles(mbtilesPath, (error: any, mbtiles: any) => {
       if (error) {
         console.error({ error, mbtilesPath });
         reject(error);
-      } else {
-        mbtiles.getInfo((error: any, data: object) => {
-          if (error) {
-            console.error({ error, mbtilesPath });
-            reject(error);
-          } else {
-            resolve(data);
-          }
-        });
+        return;
       }
+      mbtiles.getInfo((error: any, data: object) => {
+        if (error) {
+          console.error({ error, mbtilesPath });
+          reject(error);
+          return;
+        }
+        resolve(data);
+      });
     });
   });
 };
 
-export const getTile = (z: string, x: string, y: string) => {
+export const getTile = (filename: string, z: string, x: string, y: string) => {
   return new Promise<Buffer>((resolve, reject) => {
-    const mbtilesPath = `${MOUNT_PATH}/${DEFAULT_MBTILES_FILENAME}`;
+    const mbtilesPath = `${MOUNT_PATH}/${filename}`;
     return new MBTiles(mbtilesPath, (error: any, mbtiles: any) => {
       if (error) {
         console.error({ error, mbtilesPath });
         reject(error);
-      } else {
-        mbtiles.getTile(z, x, y, (error: any, data: Buffer, headers: any) => {
-          if (error) {
-            console.error({ error, mbtilesPath });
-            reject(error);
-          } else {
-            resolve(zlib.gunzipSync(data));
-          }
-        });
+        return;
       }
+      mbtiles.getTile(z, x, y, (error: any, data: Buffer, headers: any) => {
+        if (error) {
+          console.error({ error, mbtilesPath });
+          reject(error);
+          return;
+        }
+        resolve(zlib.gunzipSync(data));
+      });
     });
   });
 };

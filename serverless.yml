@@ -2,9 +2,6 @@ service: tileserverless
 
 frameworkVersion: ">=2.14.0 <3.0.0"
 
-plugins:
-  - serverless-content-encoding
-
 package:
   exclude:
     - .git/**
@@ -19,32 +16,45 @@ package:
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs14.x
   memorySize: 128
-  region: us-east-1
+  region: ap-northeast-1
   apiGateway:
-    binaryMediaTypes:
-      - "application/x-protobuf"
-      - "application/vnd.mapbox-vector-tile"
     shouldStartNameWithService: true # serverless@^2
 
+  lambdaHashingVersion: "20201221"
   stage: dev
+  httpApi:
+    cors:
+      allowedOrigins:
+        - "*"
+      allowedHeaders:
+        - Content-Type
+      allowedMethods:
+        - GET
+      maxAge: 6000
   vpc:
     securityGroupIds:
-      - ${self:custom.sgId}
+      !Split
+        - ","
+        - ${self:custom.sgId}
     subnetIds:
-      - ${self:custom.subnetId}
+      !Split
+        - ","
+        - ${self:custom.subnetId}
   environment:
     MOUNT_PATH: ${self:custom.mountPath}
-    DEFAULT_MBTILES_FILENAME: ${self:custom.defaultMbtilesFilename}
+    TILES_VERSION_DNS_NAME: ${self:custom.TILES_VERSION_DNS_NAME}
 
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - "elasticfilesystem:ClientMount"
-        - "elasticfilesystem:ClientWrite"
-      Resource:
-        - ${self:custom.efsApArn}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - "elasticfilesystem:ClientMount"
+            - "elasticfilesystem:ClientWrite"
+          Resource:
+            - ${self:custom.efsApArn}
 
 custom:
   sgId: ${env:TILESERVERLESS_SECURITY_GROUP_ID}
@@ -52,7 +62,7 @@ custom:
   accessPointId: ${env:TILESERVERLESS_FILESYSTEM_ACCESS_POINT_ID}
   fsId: ${env:TILESERVERLESS_FILESYSTEM_ID}
   mountPath: /mnt/efs
-  defaultMbtilesFilename: tiles.mbtiles
+  TILES_VERSION_DNS_NAME: ${env:TILESERVERLESS_TILES_VERSION_DNS_NAME}
   efsApArn:
     Fn::Join:
       - ":"
@@ -60,10 +70,6 @@ custom:
         - ${self:provider.region}
         - Ref: "AWS::AccountId"
         - access-point/${self:custom.accessPointId}
-
-  # plugin configs
-  contentEncoding:
-    minimumCompressionSize: 0
 
 resources:
   extensions:
@@ -82,29 +88,14 @@ functions:
   tile:
     handler: dist/tile.handler
     events:
-      - http:
-          path: tiles/{proxy+}
+      - httpApi:
+          # Remove .mvt extension with Lambda
+          path: "/{ver}/tiles/{z}/{x}/{y}"
           method: get
-          integration: lambda
-          response:
-            contentHandling: CONVERT_TO_BINARY
-            headers:
-              "Content-Type": "'application/vnd.mapbox-vector-tile'"
-              "Cache-Control": "'max-age=3600'"
-              "Access-Control-Allow-Origin": "'*'"
-              "X-Frame-Options": "'SAMEORIGIN'"
-              "Access-Control-Allow-Methods": "'GET, HEAD'"
-              "Access-Control-Allow-Headers": "'Content-Type'"
-            statusCodes:
-              400:
-                pattern: '.*"status" *: *400.*'
-                template: |
-                  #set ($obj = $util.parseJson($input.path('$.errorMessage')))
-                  { "message" : "$obj.message" }
 
   meta:
     handler: dist/meta.handler
     events:
-      - http:
-          path: tiles.json
+      - httpApi:
+          path: "/{ver}/tiles.json"
           method: get
