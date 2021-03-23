@@ -1,4 +1,5 @@
 service: tileserverless
+variablesResolutionMode: 20210219
 
 frameworkVersion: ">=2.14.0 <3.0.0"
 
@@ -23,7 +24,7 @@ provider:
     shouldStartNameWithService: true # serverless@^2
 
   lambdaHashingVersion: "20201221"
-  stage: dev
+  stage: ${opt:stage, 'dev'}
   httpApi:
     cors:
       allowedOrigins:
@@ -72,6 +73,88 @@ custom:
         - access-point/${self:custom.accessPointId}
 
 resources:
+  Resources:
+    CDN:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Aliases:
+            !Split
+              - ","
+              - ${env:CLOUDFRONT_DOMAIN_NAME}
+          Comment: "CDN for tileserverless"
+          CustomErrorResponses:
+            - ErrorCachingMinTTL: 30
+              ErrorCode: 404
+          DefaultCacheBehavior:
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            CachedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            Compress: true
+            TargetOriginId: "tileserverless"
+            CachePolicyId: !Ref CDNTilesCachePolicy
+            OriginRequestPolicyId: !Ref CDNTilesORPolicy
+            TrustedKeyGroups:
+              !Split
+                - ","
+                - ${env:TRUSTED_KEY_GROUPS}
+            ViewerProtocolPolicy: "redirect-to-https"
+          Enabled: true
+          HttpVersion: "http2"
+          IPV6Enabled: true
+          Origins:
+            - Id: "tileserverless"
+              CustomOriginConfig:
+                OriginKeepaliveTimeout: 60
+                OriginProtocolPolicy: "https-only"
+              DomainName: !Join
+                - "."
+                - - !Ref HttpApi
+                  - "execute-api"
+                  - !Ref "AWS::Region"
+                  - "amazonaws.com"
+          PriceClass: "PriceClass_All"
+          ViewerCertificate:
+            AcmCertificateArn: ${env:CLOUDFRONT_ACM_CERTIFICATE_ARN}
+            MinimumProtocolVersion: "TLSv1.2_2019"
+            SslSupportMethod: "sni-only"
+
+    CDNTilesCachePolicy:
+      Type: AWS::CloudFront::CachePolicy
+      Properties:
+        CachePolicyConfig:
+          Name: "${self:provider.stage}-tileserverless-default"
+          DefaultTTL: 300
+          MaxTTL: 86400
+          MinTTL: 0
+          ParametersInCacheKeyAndForwardedToOrigin:
+            EnableAcceptEncodingGzip: false
+            EnableAcceptEncodingBrotli: false
+            CookiesConfig:
+              CookieBehavior: "none"
+            HeadersConfig:
+              HeaderBehavior: "none"
+            QueryStringsConfig:
+              QueryStringBehavior: "none"
+
+
+    CDNTilesORPolicy:
+      Type: AWS::CloudFront::OriginRequestPolicy
+      Properties:
+        OriginRequestPolicyConfig:
+          Name: "${self:provider.stage}-tileserverless-default"
+          CookiesConfig:
+            CookieBehavior: "none"
+          HeadersConfig:
+            HeaderBehavior: "none"
+          QueryStringsConfig:
+            QueryStringBehavior: "none"
+
   extensions:
     TileLambdaFunction:
       Properties:

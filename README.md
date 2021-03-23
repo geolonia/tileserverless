@@ -2,6 +2,11 @@
 
 A Serverless Tile Server Kit.
 
+Includes:
+
+- Lambda & API Gateway
+- CloudFront CDN
+
 ## Prerequisite
 
 - AWS resource
