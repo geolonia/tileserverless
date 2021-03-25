@@ -5,7 +5,7 @@ jobs:
   build:
     docker:
       # same runtime as AWS Lambda
-      - image: circleci/node:lts
+      - image: circleci/node:14
     working_directory: ~/repo
     steps:
       - checkout
@@ -19,7 +19,7 @@ jobs:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "yarn.lock" }}
-      - run: npm test
+      - run: yarn test
       - persist_to_workspace:
           root: .
           paths:
@@ -27,16 +27,19 @@ jobs:
 
   deploy:
     docker:
-      - image: circleci/node:lts
+      - image: circleci/node:14
     working_directory: ~/repo
     steps:
       - attach_workspace:
           at: .
       - run: |
           if [ $CIRCLE_TAG ]; then
-            npm run deploy:v1
+            export CLOUDFRONT_DOMAIN_NAME="${CLOUDFRONT_DOMAIN_NAME_V1}"
+            export TRUSTED_KEY_GROUPS="${TRUSTED_KEY_GROUPS_V1}"
+            export CLOUDFRONT_ACM_CERTIFICATE_ARN="${CLOUDFRONT_ACM_CERTIFICATE_ARN_V1}"
+            yarn deploy:v1
           else
-            npm run deploy:dev
+            yarn deploy:dev
           fi
 
 workflows:

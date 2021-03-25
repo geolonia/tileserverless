@@ -69,7 +69,7 @@ custom:
       - ":"
       - - arn:aws:elasticfilesystem
         - ${self:provider.region}
-        - Ref: "AWS::AccountId"
+        - !Ref AWS::AccountId
         - access-point/${self:custom.accessPointId}
 
 resources:
@@ -82,7 +82,7 @@ resources:
             !Split
               - ","
               - ${env:CLOUDFRONT_DOMAIN_NAME}
-          Comment: "CDN for tileserverless"
+          Comment: "[${self:provider.stage}] CDN for tileserverless"
           CustomErrorResponses:
             - ErrorCachingMinTTL: 30
               ErrorCode: 404
@@ -119,6 +119,10 @@ resources:
                   - !Ref "AWS::Region"
                   - "amazonaws.com"
           PriceClass: "PriceClass_All"
+          Logging:
+            Bucket: ${env:CLOUDFRONT_LOGS_BUCKET}.s3.amazonaws.com
+            IncludeCookies: false
+            Prefix: new/
           ViewerCertificate:
             AcmCertificateArn: ${env:CLOUDFRONT_ACM_CERTIFICATE_ARN}
             MinimumProtocolVersion: "TLSv1.2_2019"
