@@ -23,6 +23,8 @@ provider:
   apiGateway:
     shouldStartNameWithService: true # serverless@^2
 
+  versionFunctions: false
+  logRetentionInDays: 30
   lambdaHashingVersion: "20201221"
   stage: ${opt:stage, 'dev'}
   httpApi:
