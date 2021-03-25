@@ -1,9 +1,7 @@
 service: tileserverless
+variablesResolutionMode: 20210219
 
 frameworkVersion: ">=2.14.0 <3.0.0"
-
-plugins:
-  - serverless-content-encoding
 
 package:
   exclude:
@@ -19,32 +17,45 @@ package:
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs14.x
   memorySize: 128
-  region: us-east-1
+  region: ap-northeast-1
   apiGateway:
-    binaryMediaTypes:
-      - "application/x-protobuf"
-      - "application/vnd.mapbox-vector-tile"
     shouldStartNameWithService: true # serverless@^2
 
-  stage: dev
+  lambdaHashingVersion: "20201221"
+  stage: ${opt:stage, 'dev'}
+  httpApi:
+    cors:
+      allowedOrigins:
+        - "*"
+      allowedHeaders:
+        - Content-Type
+      allowedMethods:
+        - GET
+      maxAge: 6000
   vpc:
     securityGroupIds:
-      - ${self:custom.sgId}
+      !Split
+        - ","
+        - ${self:custom.sgId}
     subnetIds:
-      - ${self:custom.subnetId}
+      !Split
+        - ","
+        - ${self:custom.subnetId}
   environment:
     MOUNT_PATH: ${self:custom.mountPath}
-    DEFAULT_MBTILES_FILENAME: ${self:custom.defaultMbtilesFilename}
+    TILES_VERSION_DNS_NAME: ${self:custom.TILES_VERSION_DNS_NAME}
 
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - "elasticfilesystem:ClientMount"
-        - "elasticfilesystem:ClientWrite"
-      Resource:
-        - ${self:custom.efsApArn}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - "elasticfilesystem:ClientMount"
+            - "elasticfilesystem:ClientWrite"
+          Resource:
+            - ${self:custom.efsApArn}
 
 custom:
   sgId: ${env:TILESERVERLESS_SECURITY_GROUP_ID}
@@ -52,20 +63,102 @@ custom:
   accessPointId: ${env:TILESERVERLESS_FILESYSTEM_ACCESS_POINT_ID}
   fsId: ${env:TILESERVERLESS_FILESYSTEM_ID}
   mountPath: /mnt/efs
-  defaultMbtilesFilename: tiles.mbtiles
+  TILES_VERSION_DNS_NAME: ${env:TILESERVERLESS_TILES_VERSION_DNS_NAME}
   efsApArn:
     Fn::Join:
       - ":"
       - - arn:aws:elasticfilesystem
         - ${self:provider.region}
-        - Ref: "AWS::AccountId"
+        - !Ref AWS::AccountId
         - access-point/${self:custom.accessPointId}
 
-  # plugin configs
-  contentEncoding:
-    minimumCompressionSize: 0
-
 resources:
+  Resources:
+    CDN:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Aliases:
+            !Split
+              - ","
+              - ${env:CLOUDFRONT_DOMAIN_NAME}
+          Comment: "[${self:provider.stage}] CDN for tileserverless"
+          CustomErrorResponses:
+            - ErrorCachingMinTTL: 30
+              ErrorCode: 404
+          DefaultCacheBehavior:
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            CachedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            Compress: true
+            TargetOriginId: "tileserverless"
+            CachePolicyId: !Ref CDNTilesCachePolicy
+            OriginRequestPolicyId: !Ref CDNTilesORPolicy
+            TrustedKeyGroups:
+              !Split
+                - ","
+                - ${env:TRUSTED_KEY_GROUPS}
+            ViewerProtocolPolicy: "redirect-to-https"
+          Enabled: true
+          HttpVersion: "http2"
+          IPV6Enabled: true
+          Origins:
+            - Id: "tileserverless"
+              CustomOriginConfig:
+                OriginKeepaliveTimeout: 60
+                OriginProtocolPolicy: "https-only"
+              DomainName: !Join
+                - "."
+                - - !Ref HttpApi
+                  - "execute-api"
+                  - !Ref "AWS::Region"
+                  - "amazonaws.com"
+          PriceClass: "PriceClass_All"
+          Logging:
+            Bucket: ${env:CLOUDFRONT_LOGS_BUCKET}.s3.amazonaws.com
+            IncludeCookies: false
+            Prefix: new/
+          ViewerCertificate:
+            AcmCertificateArn: ${env:CLOUDFRONT_ACM_CERTIFICATE_ARN}
+            MinimumProtocolVersion: "TLSv1.2_2019"
+            SslSupportMethod: "sni-only"
+
+    CDNTilesCachePolicy:
+      Type: AWS::CloudFront::CachePolicy
+      Properties:
+        CachePolicyConfig:
+          Name: "${self:provider.stage}-tileserverless-default"
+          DefaultTTL: 300
+          MaxTTL: 86400
+          MinTTL: 0
+          ParametersInCacheKeyAndForwardedToOrigin:
+            EnableAcceptEncodingGzip: false
+            EnableAcceptEncodingBrotli: false
+            CookiesConfig:
+              CookieBehavior: "none"
+            HeadersConfig:
+              HeaderBehavior: "none"
+            QueryStringsConfig:
+              QueryStringBehavior: "none"
+
+
+    CDNTilesORPolicy:
+      Type: AWS::CloudFront::OriginRequestPolicy
+      Properties:
+        OriginRequestPolicyConfig:
+          Name: "${self:provider.stage}-tileserverless-default"
+          CookiesConfig:
+            CookieBehavior: "none"
+          HeadersConfig:
+            HeaderBehavior: "none"
+          QueryStringsConfig:
+            QueryStringBehavior: "none"
+
   extensions:
     TileLambdaFunction:
       Properties:
@@ -82,29 +175,14 @@ functions:
   tile:
     handler: dist/tile.handler
     events:
-      - http:
-          path: tiles/{proxy+}
+      - httpApi:
+          # Remove .mvt extension with Lambda
+          path: "/{ver}/tiles/{z}/{x}/{y}"
           method: get
-          integration: lambda
-          response:
-            contentHandling: CONVERT_TO_BINARY
-            headers:
-              "Content-Type": "'application/vnd.mapbox-vector-tile'"
-              "Cache-Control": "'max-age=3600'"
-              "Access-Control-Allow-Origin": "'*'"
-              "X-Frame-Options": "'SAMEORIGIN'"
-              "Access-Control-Allow-Methods": "'GET, HEAD'"
-              "Access-Control-Allow-Headers": "'Content-Type'"
-            statusCodes:
-              400:
-                pattern: '.*"status" *: *400.*'
-                template: |
-                  #set ($obj = $util.parseJson($input.path('$.errorMessage')))
-                  { "message" : "$obj.message" }
 
   meta:
     handler: dist/meta.handler
     events:
-      - http:
-          path: tiles.json
+      - httpApi:
+          path: "/{ver}/tiles.json"
           method: get

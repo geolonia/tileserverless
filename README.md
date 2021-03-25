@@ -2,16 +2,27 @@
 
 A Serverless Tile Server Kit.
 
+Includes:
+
+- Lambda & API Gateway
+- CloudFront CDN
+
 ## Prerequisite
 
 - AWS resource
     - EFS
     - Security Group for EFS (Allow TCP 2049 from the Lambda)
     - VPC for EFS
-
-- MBTiles should be uploaded as tiles.mbtiles` at the EFS
+- DNS server
+- MBTiles should be uploaded as XXX.mbtiles in EFS
 
 ## Deploy
+
+If you don't use Linux, use Docker to compile the local dependencies:
+
+```shell
+docker run --rm -v "$PWD":/var/task --entrypoint="bash" amazon/aws-lambda-nodejs:14 "-c" "yum groupinstall -y \"Development Tools\" && npm rebuild"
+```
 
 ```shell
 $ git clone https://github.com/geolonia/tileserverless

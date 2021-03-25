@@ -1,7 +1,7 @@
 import { parseTilePath } from "./lib";
 
 it("should parse path", () => {
-  const params = parseTilePath("10/11/12.mvt");
+  const params = parseTilePath({x: "11", y: "12", z: "10"});
   expect(params).not.toBeNull();
   // @ts-ignore
   const { z, x, y } = params;
