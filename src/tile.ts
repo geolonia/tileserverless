@@ -26,10 +26,10 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   const [y, ] = origY.split(".");
 
   try {
-    const tile = await getTile(mbtiles, z, x, y);
+    const { data, headers } = await getTile(mbtiles, z, x, y);
     return {
       headers: {
-        "Content-Type": "application/vnd.mapbox-vector-tile",
+        ...headers,
         "Cache-Control": "public, max-age=3600",
         "Access-Control-Allow-Origin": "*",
         "X-Frame-Options": "SAMEORIGIN",
@@ -38,7 +38,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
       },
       isBase64Encoded: true,
       statusCode: 200,
-      body: tile.toString("base64"),
+      body: data.toString("base64"),
     };
   } catch (error) {
     // No content
