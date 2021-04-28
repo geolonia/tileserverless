@@ -1,6 +1,5 @@
 // @ts-ignore
 import MBTiles from "@mapbox/mbtiles";
-import zlib from "zlib";
 import { promises as dns } from "dns";
 import { APIGatewayProxyEventPathParameters } from "aws-lambda";
 const { MOUNT_PATH, TILES_VERSION_DNS_NAME } = process.env;
@@ -94,8 +93,13 @@ export const getInfo = (filename: string) => {
   });
 };
 
+export interface GetTileResponse {
+  data: Buffer
+  headers: { [key: string]: string }
+}
+
 export const getTile = (filename: string, z: string, x: string, y: string) => {
-  return new Promise<Buffer>((resolve, reject) => {
+  return new Promise<GetTileResponse>((resolve, reject) => {
     const mbtilesPath = `${MOUNT_PATH}/${filename}`;
     return new MBTiles(mbtilesPath, (error: any, mbtiles: any) => {
       if (error) {
@@ -103,13 +107,13 @@ export const getTile = (filename: string, z: string, x: string, y: string) => {
         reject(error);
         return;
       }
-      mbtiles.getTile(z, x, y, (error: any, data: Buffer, headers: any) => {
+      mbtiles.getTile(z, x, y, (error: any, data: Buffer, headers: { [key: string]: string }) => {
         if (error) {
           console.error({ error, mbtilesPath });
           reject(error);
           return;
         }
-        resolve(zlib.gunzipSync(data));
+        resolve({ data, headers });
       });
     });
   });
