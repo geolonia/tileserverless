@@ -1,6 +1,7 @@
 // @ts-ignore
 import MBTiles from "@mapbox/mbtiles";
 import { promises as dns } from "dns";
+import fs from "fs";
 import { APIGatewayProxyEventPathParameters } from "aws-lambda";
 const { MOUNT_PATH, TILES_VERSION_DNS_NAME } = process.env;
 
@@ -67,25 +68,37 @@ export const getMbtilesFilename = async (version: string) => {
       return match[1];
     }
   } catch (e) {
+    if (e.code === "ENOTFOUND") {
+      const value = `custom/${version}.mbtiles`;
+      if (!fs.existsSync(`${MOUNT_PATH}/${value}`)) {
+        return null;
+      }
+      VERSION_CACHE[version] = {
+        expires: (new Date().getTime()) + 300_000, // 5 minutes
+        value,
+      };
+      return value;
+    }
     return null;
   }
   return null;
 };
 
+type MBTilesMetadata = { [key: string]: any }
+
 export const getInfo = (filename: string) => {
   const mbtilesPath = `${MOUNT_PATH}/${filename}`;
-  return new Promise<object>((resolve, reject) => {
+  return new Promise<MBTilesMetadata>((resolve, reject) => {
     return new MBTiles(mbtilesPath, (error: any, mbtiles: any) => {
       if (error) {
         console.error({ error, mbtilesPath });
         reject(error);
         return;
       }
-      mbtiles.getInfo((error: any, data: object) => {
+      mbtiles.getInfo((error: any, data: any) => {
         if (error) {
           console.error({ error, mbtilesPath });
-          reject(error);
-          return;
+          return reject(error);
         }
         resolve(data);
       });
