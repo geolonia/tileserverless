@@ -145,10 +145,11 @@ resources:
             CookiesConfig:
               CookieBehavior: "none"
             HeadersConfig:
-              HeaderBehavior: "none"
+              HeaderBehavior: "whitelist"
+              Headers:
+                - "Origin"
             QueryStringsConfig:
               QueryStringBehavior: "none"
-
 
     CDNTilesORPolicy:
       Type: AWS::CloudFront::OriginRequestPolicy
