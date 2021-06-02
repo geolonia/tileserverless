@@ -8,9 +8,7 @@
     "test": "jest",
     "build": "tsc",
     "deploy:dev": "yarn build && sls deploy --stage=dev",
-    "remove:dev": "sls remove --stage=dev",
-    "deploy:v1": "yarn build && sls deploy --stage=v1",
-    "remove:v1": "sls remove --stage=v1"
+    "deploy:v1": "yarn build && sls deploy --stage=v1"
   },
   "jest": {
     "moduleFileExtensions": [

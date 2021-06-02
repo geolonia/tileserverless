@@ -47,6 +47,7 @@ provider:
         - ${self:custom.subnetId}
   environment:
     MOUNT_PATH: ${self:custom.mountPath}
+    CLOUDFRONT_DOMAIN_NAME: ${env:CLOUDFRONT_DOMAIN_NAME}
     TILES_VERSION_DNS_NAME: ${self:custom.TILES_VERSION_DNS_NAME}
 
   iam:

@@ -7,3 +7,8 @@ export TILESERVERLESS_SECURITY_GROUP_ID=sg-xxxx
 export TILESERVERLESS_SUBNET_ID=subnet-xxxx
 export TILESERVERLESS_FILESYSTEM_ACCESS_POINT_ID=fsap-xxxx
 export TILESERVERLESS_FILESYSTEM_ID=fs-xxxx
+
+export CLOUDFRONT_DOMAIN_NAME=tileserver.example.com
+export TRUSTED_KEY_GROUPS=group_1,group_2
+export CLOUDFRONT_LOGS_BUCKET=s3-bucket-name
+export CLOUDFRONT_ACM_CERTIFICATE_ARN=arn:aws:acm:us-east-1:12345:certificate/XXX

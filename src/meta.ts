@@ -15,9 +15,13 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     return errorResponse(404, "not found");
   }
   const meta = await getInfo(mbtiles);
-
+  let formatExt = "";
+  if (meta.format) {
+    formatExt = "." + meta.format;
+  }
+  const domainName = process.env.CLOUDFRONT_DOMAIN_NAME!.split(",")[0];
   const tiles = [
-    `https://${event.requestContext.domainName}/${version}/tiles/{z}/{x}/{y}.mvt`,
+    `https://${domainName}/${version}/tiles/{z}/{x}/{y}${formatExt}`,
   ];
 
   return {
