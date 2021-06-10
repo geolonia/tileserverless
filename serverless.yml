@@ -79,6 +79,7 @@ resources:
   Resources:
     CDN:
       Type: AWS::CloudFront::Distribution
+      DeletionPolicy: Retain
       Properties:
         DistributionConfig:
           Aliases:
@@ -133,6 +134,7 @@ resources:
 
     CDNTilesCachePolicy:
       Type: AWS::CloudFront::CachePolicy
+      DeletionPolicy: Retain
       Properties:
         CachePolicyConfig:
           Name: "${self:provider.stage}-tileserverless-default"
@@ -153,6 +155,7 @@ resources:
 
     CDNTilesORPolicy:
       Type: AWS::CloudFront::OriginRequestPolicy
+      DeletionPolicy: Retain
       Properties:
         OriginRequestPolicyConfig:
           Name: "${self:provider.stage}-tileserverless-default"
