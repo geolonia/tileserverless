@@ -1,7 +1,7 @@
 {
   "name": "tileserverless",
   "description": "A Serverless Tile Server Kit.",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "main": "serverless.yml",
   "license": "MIT",
   "scripts": {
