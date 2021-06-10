@@ -75,6 +75,7 @@ custom:
         - !Ref AWS::AccountId
         - access-point/${self:custom.accessPointId}
 
+resources:
   extensions:
     TileLambdaFunction:
       Properties:
