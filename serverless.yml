@@ -27,6 +27,9 @@ provider:
   logRetentionInDays: 30
   lambdaHashingVersion: "20201221"
   stage: ${opt:stage, 'dev'}
+  versionFunctions: false
+  deploymentBucket:
+    name: geolonia-slsdeploymentbucket-${self:provider.region}
   httpApi:
     cors:
       allowedOrigins:
