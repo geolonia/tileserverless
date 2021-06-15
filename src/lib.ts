@@ -1,6 +1,7 @@
 import MBTiles, { Info as MBTilesInfo } from "@mapbox/mbtiles";
 import { promises as dns } from "dns";
 import fs from "fs";
+import crypto from "crypto";
 import { APIGatewayProxyEventPathParameters } from "aws-lambda";
 const { MOUNT_PATH, TILES_VERSION_DNS_NAME } = process.env;
 
@@ -16,6 +17,7 @@ export const errorResponse = (status: number, message: string) => ({
   isBase64Encoded: false,
   headers: {
     "Content-Type": "application/json",
+    "Cache-Control": "no-store, max-age=0",
   },
   body: JSON.stringify({
     status,
@@ -110,7 +112,7 @@ const getMBTilesInstance = (filename: string) => {
 
     new MBTiles(mbtilesUrl, (err, mbtiles) => {
       if (err || !mbtiles) {
-        return reject(err)
+        return reject(err);
       }
       MBTILES_LRU_INDEX.push(filename);
       MBTILES_CACHE[filename] = mbtiles;
@@ -125,6 +127,20 @@ export const getInfo = async (filename: string) => {
     mbtiles.getInfo((error, data) => {
       if (error || !data) {
         return reject(error);
+      }
+      // If version already has build information, we don't need to add it.
+      if (data.version && (data.version as string).indexOf("+") > 0) {
+        return resolve(data);
+      }
+
+      const fingerprintStr = mbtiles._stat.size + '-' + Number(mbtiles._stat.mtime);
+      const hash = crypto.createHash('md5');
+      hash.update(fingerprintStr);
+      const fingerprint = hash.digest('hex');
+      if (!data.version) {
+        data.version = `1.0.0+${fingerprint}`;
+      } else {
+        data.version += `+${fingerprint}`;
       }
       resolve(data);
     });

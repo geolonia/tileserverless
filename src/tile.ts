@@ -6,6 +6,14 @@ import {
   getMbtilesFilename,
 } from "./lib";
 
+const DEFAULT_HEADERS = {
+  "Cache-Control": "public, max-age=604800, immutable",
+  "Access-Control-Allow-Origin": "*",
+  "X-Frame-Options": "SAMEORIGIN",
+  "Access-Control-Allow-Methods": "GET, HEAD",
+  "Access-Control-Allow-Headers": "Content-Type",
+}
+
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   const version = event.pathParameters?.ver;
   if (!version) {
@@ -30,11 +38,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     return {
       headers: {
         ...headers,
-        "Cache-Control": "public, max-age=3600",
-        "Access-Control-Allow-Origin": "*",
-        "X-Frame-Options": "SAMEORIGIN",
-        "Access-Control-Allow-Methods": "GET, HEAD",
-        "Access-Control-Allow-Headers": "Content-Type"
+        ...DEFAULT_HEADERS,
       },
       isBase64Encoded: true,
       statusCode: 200,
@@ -42,6 +46,10 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     };
   } catch (error) {
     // No content
-    return errorResponse(204, "");
+    return {
+      headers: DEFAULT_HEADERS,
+      statusCode: 204,
+      body: "",
+    }
   }
 };
