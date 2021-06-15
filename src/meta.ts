@@ -28,8 +28,8 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   if (event.routeKey === "GET /{ver}/metadata.json") {
     body = {
       ...meta,
-      tiles,
-    }
+      tiles: [],
+    };
   } else if (event.routeKey === "GET /{ver}/tiles.json") {
     body = {
       attribution: meta.attribution,
