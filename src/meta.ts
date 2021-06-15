@@ -38,6 +38,9 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
       format: meta.format,
       scheme: meta.scheme,
       version: meta.version,
+      maxzoom: meta.maxzoom,
+      minzoom: meta.minzoom,
+      center: meta.center,
       tiles,
     }
   } else {
