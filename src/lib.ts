@@ -1,5 +1,4 @@
-// @ts-ignore
-import MBTiles from "@mapbox/mbtiles";
+import MBTiles, { Info as MBTilesInfo } from "@mapbox/mbtiles";
 import { promises as dns } from "dns";
 import fs from "fs";
 import { APIGatewayProxyEventPathParameters } from "aws-lambda";
@@ -84,26 +83,53 @@ export const getMbtilesFilename = async (version: string) => {
   return null;
 };
 
-type MBTilesMetadata = { [key: string]: any }
+// latest recently-used mbtiles filenames will be at the end of the list.
+const MBTILES_LRU_INDEX: string[] = []
+const MBTILES_CACHE: { [key: string]: MBTiles } = {}
+const MBTILES_CACHE_MAX = 6;
 
-export const getInfo = (filename: string) => {
-  const mbtilesPath = `${MOUNT_PATH}/${filename}`;
-  return new Promise<MBTilesMetadata>((resolve, reject) => {
-    return new MBTiles(mbtilesPath, (error: any, mbtiles: any) => {
-      if (error) {
-        console.error({ error, mbtilesPath });
-        reject(error);
-        return;
+const getMBTilesInstance = (filename: string) => {
+  const mbtilesUrl = `${MOUNT_PATH}/${filename}?mode=ro`
+  return new Promise<MBTiles>((resolve, reject) => {
+    if (filename in MBTILES_CACHE) {
+      const prevIdx = MBTILES_LRU_INDEX.indexOf(filename);
+      if (prevIdx !== -1) {
+        MBTILES_LRU_INDEX.splice(prevIdx, 1);
       }
-      mbtiles.getInfo((error: any, data: any) => {
-        if (error) {
-          console.error({ error, mbtilesPath });
-          return reject(error);
-        }
-        resolve(data);
-      });
+      MBTILES_LRU_INDEX.push(filename);
+      return resolve(MBTILES_CACHE[filename]);
+    }
+
+    if (MBTILES_LRU_INDEX.length >= MBTILES_CACHE_MAX) {
+      const idxToDelete = MBTILES_LRU_INDEX.length - MBTILES_CACHE_MAX;
+      const filenamesToDelete = MBTILES_LRU_INDEX.splice(0, idxToDelete);
+      for (const toDel in filenamesToDelete) {
+        delete MBTILES_CACHE[toDel];
+      }
+    }
+
+    new MBTiles(mbtilesUrl, (err, mbtiles) => {
+      if (err || !mbtiles) {
+        return reject(err)
+      }
+      MBTILES_LRU_INDEX.push(filename);
+      MBTILES_CACHE[filename] = mbtiles;
+      return resolve(mbtiles);
+    })
+  })
+}
+
+export const getInfo = async (filename: string) => {
+  const mbtiles = await getMBTilesInstance(filename);
+  const info = await new Promise<MBTilesInfo>((resolve, reject) => {
+    mbtiles.getInfo((error, data) => {
+      if (error || !data) {
+        return reject(error);
+      }
+      resolve(data);
     });
   });
+  return info;
 };
 
 export interface GetTileResponse {
@@ -111,23 +137,18 @@ export interface GetTileResponse {
   headers: { [key: string]: string }
 }
 
-export const getTile = (filename: string, z: string, x: string, y: string) => {
-  return new Promise<GetTileResponse>((resolve, reject) => {
-    const mbtilesPath = `${MOUNT_PATH}/${filename}`;
-    return new MBTiles(mbtilesPath, (error: any, mbtiles: any) => {
-      if (error) {
-        console.error({ error, mbtilesPath });
-        reject(error);
-        return;
+export const getTile = async (filename: string, z: string, x: string, y: string) => {
+  const mbtiles = await getMBTilesInstance(filename);
+  const _z = parseInt(z, 10);
+  const _x = parseInt(x, 10);
+  const _y = parseInt(y, 10);
+  const resp = await new Promise<GetTileResponse>((resolve, reject) => {
+    mbtiles.getTile(_z, _x, _y, (error, data, headers) => {
+      if (error || !data || !headers) {
+        return reject(error);
       }
-      mbtiles.getTile(z, x, y, (error: any, data: Buffer, headers: { [key: string]: string }) => {
-        if (error) {
-          console.error({ error, mbtilesPath });
-          reject(error);
-          return;
-        }
-        resolve({ data, headers });
-      });
+      resolve({ data, headers });
     });
   });
+  return resp;
 };
