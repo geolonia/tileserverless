@@ -18,7 +18,7 @@ package:
 provider:
   name: aws
   runtime: nodejs14.x
-  memorySize: 128
+  memorySize: 256
   region: ap-northeast-1
   apiGateway:
     shouldStartNameWithService: true # serverless@^2
@@ -104,4 +104,8 @@ functions:
     events:
       - httpApi:
           path: "/{ver}/tiles.json"
+          method: get
+
+      - httpApi:
+          path: "/{ver}/metadata.json"
           method: get

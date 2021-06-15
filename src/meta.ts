@@ -21,8 +21,28 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   }
   const domainName = process.env.CLOUDFRONT_DOMAIN_NAME!.split(",")[0];
   const tiles = [
-    `https://${domainName}/${version}/tiles/{z}/{x}/{y}${formatExt}`,
+    `https://${domainName}/${version}/tiles/{z}/{x}/{y}${formatExt}?v=${encodeURIComponent(meta.version)}`,
   ];
+
+  let body: { [key: string]: any };
+  if (event.routeKey === "GET /{ver}/metadata.json") {
+    body = {
+      ...meta,
+      tiles,
+    }
+  } else if (event.routeKey === "GET /{ver}/tiles.json") {
+    body = {
+      attribution: meta.attribution,
+      bounds: meta.bounds,
+      description: meta.description,
+      format: meta.format,
+      scheme: meta.scheme,
+      version: meta.version,
+      tiles,
+    }
+  } else {
+    throw new Error('routekey was not found')
+  }
 
   return {
     statusCode: 200,
@@ -31,6 +51,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
       "Access-Control-Allow-Origin": "*",
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ ...meta, tiles }),
+    body: JSON.stringify(body),
   };
 };
