@@ -16,6 +16,7 @@ export const errorResponse = (status: number, message: string) => ({
   isBase64Encoded: false,
   headers: {
     "Content-Type": "application/json",
+    "Cache-Control": "no-store, max-age=0",
   },
   body: JSON.stringify({
     status,
