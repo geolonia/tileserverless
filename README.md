@@ -13,7 +13,6 @@ Includes:
     - EFS
     - Security Group for EFS (Allow TCP 2049 from the Lambda)
     - VPC for EFS
-- DNS server
 - MBTiles should be uploaded as XXX.mbtiles in EFS
 
 ## Deploy

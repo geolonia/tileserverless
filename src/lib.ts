@@ -1,17 +1,9 @@
 import MBTiles, { Info as MBTilesInfo } from "@mapbox/mbtiles";
-import { promises as dns } from "dns";
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 import { APIGatewayProxyEventPathParameters } from "aws-lambda";
-const { MOUNT_PATH, TILES_VERSION_DNS_NAME } = process.env;
-
-interface VersionCacheEntry {
-  expires: number
-  value: string
-}
-
-const VERSION_CACHE: { [key: string]: VersionCacheEntry } = {}
+const { MOUNT_PATH } = process.env;
 
 export const errorResponse = (status: number, message: string) => ({
   statusCode: status,
