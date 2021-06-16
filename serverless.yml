@@ -50,7 +50,6 @@ provider:
   environment:
     MOUNT_PATH: ${self:custom.mountPath}
     CLOUDFRONT_DOMAIN_NAME: ${env:CLOUDFRONT_DOMAIN_NAME}
-    TILES_VERSION_DNS_NAME: ${self:custom.TILES_VERSION_DNS_NAME}
 
   iam:
     role:
@@ -68,7 +67,6 @@ custom:
   accessPointId: ${env:TILESERVERLESS_FILESYSTEM_ACCESS_POINT_ID}
   fsId: ${env:TILESERVERLESS_FILESYSTEM_ID}
   mountPath: /mnt/efs
-  TILES_VERSION_DNS_NAME: ${env:TILESERVERLESS_TILES_VERSION_DNS_NAME}
   efsApArn:
     Fn::Join:
       - ":"
