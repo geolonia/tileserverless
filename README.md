@@ -38,3 +38,26 @@ $ npm run deploy:dev
 ```shell
 $ npm run remove:dev
 ```
+
+## How to use
+
+When Tileserverless is deployed, an API Gateway (HTTP API) will be created. Serverless Framework will output the URL generated. You can use this directly or as the origin server in a CDN.
+
+Replace `{ver}` in the URL with the filename (excluding the `.mbtiles` extension) of the MBTiles file you want to access in EFS.
+
+For example, the name of the MBTiles file is `test-tiles-openstreetmap.mbtiles`. The URL to add to sources will be:
+
+```
+https://XXXXX.execute-api.xx-xxxx-1.amazonaws.com/test-tiles-openstreetmap/tiles.json
+```
+
+If you want to refer to files within a subdirectory, use `$` as a path delimiter.
+
+The following example will serve a file called `test-tiles-openstreetmap` in the `prerelease` directory.
+
+You can use `%24` if you are worried about URL encoding. The following two URLs are functionally equivalent.
+
+```
+https://XXXXX.execute-api.xx-xxxx-1.amazonaws.com/prerelease$test-tiles-openstreetmap/tiles.json
+https://XXXXX.execute-api.xx-xxxx-1.amazonaws.com/prerelease%24test-tiles-openstreetmap/tiles.json
+```

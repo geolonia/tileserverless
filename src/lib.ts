@@ -1,6 +1,7 @@
 import MBTiles, { Info as MBTilesInfo } from "@mapbox/mbtiles";
 import { promises as dns } from "dns";
 import fs from "fs";
+import path from "path";
 import crypto from "crypto";
 import { APIGatewayProxyEventPathParameters } from "aws-lambda";
 const { MOUNT_PATH, TILES_VERSION_DNS_NAME } = process.env;
@@ -42,45 +43,13 @@ export const parseTilePath = (params?: APIGatewayProxyEventPathParameters) => {
 };
 
 export const getMbtilesFilename = async (version: string) => {
-  const now = new Date().getTime();
-  const cachedEntry = VERSION_CACHE[version];
-  if (cachedEntry && cachedEntry.expires >= now) {
-    return cachedEntry.value;
-  }
-
-  const match = version.match(/^[a-zA-Z0-9-]+$/);
-  if (!match) {
-    return null;
-  }
-
-  try {
-    const records = await dns.resolveTxt(`${version}-tiles.${TILES_VERSION_DNS_NAME}`);
-    const joined = records.map(r => r.join(''));
-    for (let i = 0; i < joined.length; i++) {
-      const element = joined[i];
-      const match = element.match(/^tsls-file-name=([a-zA-Z0-9-_]+.mbtiles)$/);
-      if (!match) {
-        continue;
-      }
-      VERSION_CACHE[version] = {
-        expires: (new Date().getTime()) + 300_000, // 5 minutes
-        value: match[1],
-      }
-      return match[1];
-    }
-  } catch (e) {
-    if (e.code === "ENOTFOUND") {
-      const value = `custom/${version}.mbtiles`;
-      if (!fs.existsSync(`${MOUNT_PATH}/${value}`)) {
-        return null;
-      }
-      VERSION_CACHE[version] = {
-        expires: (new Date().getTime()) + 300_000, // 5 minutes
-        value,
-      };
-      return value;
-    }
-    return null;
+  const rawPath = version.replace(/\$/g, '/');
+  const safePath = path.resolve(
+    MOUNT_PATH,
+    '.' + path.normalize('/' + rawPath)
+  ) + '.mbtiles';
+  if (fs.existsSync(safePath)) {
+    return path.relative(MOUNT_PATH, safePath);
   }
   return null;
 };
