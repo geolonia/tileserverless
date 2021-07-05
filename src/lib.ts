@@ -52,15 +52,25 @@ const MBTILES_CACHE: { [key: string]: MBTiles } = {}
 const MBTILES_CACHE_MAX = 6;
 
 const getMBTilesInstance = (filename: string) => {
-  const mbtilesUrl = `${MOUNT_PATH}/${filename}?mode=ro`
   return new Promise<MBTiles>((resolve, reject) => {
-    if (filename in MBTILES_CACHE) {
-      const prevIdx = MBTILES_LRU_INDEX.indexOf(filename);
+    const mbtilesUrl = `${MOUNT_PATH}/${filename}?mode=ro`;
+    const localFilePath = path.join(MOUNT_PATH, filename);
+    let cacheKey = filename;
+    try {
+      const _stat = fs.statSync(localFilePath);
+      cacheKey = _stat.size + '-' + Number(_stat.mtime) + '-' + filename;
+    } catch (e) {
+      if (e.code === "ENOENT") {
+        return reject(e);
+      }
+    }
+    if (cacheKey in MBTILES_CACHE) {
+      const prevIdx = MBTILES_LRU_INDEX.indexOf(cacheKey);
       if (prevIdx !== -1) {
         MBTILES_LRU_INDEX.splice(prevIdx, 1);
       }
-      MBTILES_LRU_INDEX.push(filename);
-      return resolve(MBTILES_CACHE[filename]);
+      MBTILES_LRU_INDEX.push(cacheKey);
+      return resolve(MBTILES_CACHE[cacheKey]);
     }
 
     if (MBTILES_LRU_INDEX.length >= MBTILES_CACHE_MAX) {
@@ -75,8 +85,8 @@ const getMBTilesInstance = (filename: string) => {
       if (err || !mbtiles) {
         return reject(err);
       }
-      MBTILES_LRU_INDEX.push(filename);
-      MBTILES_CACHE[filename] = mbtiles;
+      MBTILES_LRU_INDEX.push(cacheKey);
+      MBTILES_CACHE[cacheKey] = mbtiles;
       return resolve(mbtiles);
     })
   })
