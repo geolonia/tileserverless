@@ -27,20 +27,33 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   let body: { [key: string]: any };
   if (event.routeKey === "GET /{ver}/metadata.json") {
     body = {
-      ...meta,
-      tiles: [],
+      name: meta.name,
+      description: meta.description,
+      version: meta.version,
+      minzoom: meta.minzoom,
+      maxzoom: meta.maxzoom,
+      center: meta.center,
+      bounds: meta.bounds,
+      type: meta.type,
+      format: meta.format,
+      json: {
+        vector_layers: JSON.stringify(meta.vector_layers)
+      }
     };
   } else if (event.routeKey === "GET /{ver}/tiles.json") {
     body = {
-      attribution: meta.attribution,
-      bounds: meta.bounds,
+      tilejson: "3.0.0",
+      name: meta.name,
       description: meta.description,
-      format: meta.format,
-      scheme: meta.scheme,
       version: meta.version,
-      maxzoom: meta.maxzoom,
+      attribution: meta.attribution,
+      scheme: meta.scheme,
+      format: meta.format,
       minzoom: meta.minzoom,
+      maxzoom: meta.maxzoom,
+      bounds: meta.bounds,
       center: meta.center,
+      vector_layers: meta.vector_layers,
       tiles,
     }
   } else {
