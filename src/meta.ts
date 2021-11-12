@@ -41,6 +41,10 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
       }
     };
   } else if (event.routeKey === "GET /{ver}/tiles.json") {
+    /**
+     * Definition of TileJSON v3.0.0
+     * see https://github.com/mapbox/tilejson-spec/blob/master/3.0.0/schema.json
+     */
     body = {
       tilejson: "3.0.0",
       name: meta.name,
