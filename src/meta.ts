@@ -26,21 +26,18 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
   let body: { [key: string]: any };
   if (event.routeKey === "GET /{ver}/metadata.json") {
+    // metadata.json can be used to introspect a tileset without requiring authorization or
+    // triggering a billable page-load.
     body = {
       ...meta,
       tiles: [],
     };
   } else if (event.routeKey === "GET /{ver}/tiles.json") {
+    // tiles.json is mainly used for loading and viewing tiles, but some tools use this to
+    // introspect and generate base styles, so important keys such as vector_layers are
+    // preserved.
     body = {
-      attribution: meta.attribution,
-      bounds: meta.bounds,
-      description: meta.description,
-      format: meta.format,
-      scheme: meta.scheme,
-      version: meta.version,
-      maxzoom: meta.maxzoom,
-      minzoom: meta.minzoom,
-      center: meta.center,
+      ...meta,
       tiles,
     }
   } else {
