@@ -59,7 +59,7 @@ const getMBTilesInstance = (filename: string) => {
     try {
       const _stat = fs.statSync(localFilePath);
       cacheKey = _stat.size + '-' + Number(_stat.mtime) + '-' + filename;
-    } catch (e) {
+    } catch (e: any) {
       if (e.code === "ENOENT") {
         return reject(e);
       }

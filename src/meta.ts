@@ -26,38 +26,18 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
   let body: { [key: string]: any };
   if (event.routeKey === "GET /{ver}/metadata.json") {
+    // metadata.json can be used to introspect a tileset without requiring authorization or
+    // triggering a billable page-load.
     body = {
-      name: meta.name,
-      description: meta.description,
-      version: meta.version,
-      minzoom: meta.minzoom,
-      maxzoom: meta.maxzoom,
-      center: meta.center,
-      bounds: meta.bounds,
-      type: meta.type,
-      format: meta.format,
-      json: {
-        vector_layers: JSON.stringify(meta.vector_layers)
-      }
+      ...meta,
+      tiles: [],
     };
   } else if (event.routeKey === "GET /{ver}/tiles.json") {
-    /**
-     * Definition of TileJSON v3.0.0
-     * see https://github.com/mapbox/tilejson-spec/blob/master/3.0.0/schema.json
-     */
+    // tiles.json is mainly used for loading and viewing tiles, but some tools use this to
+    // introspect and generate base styles, so important keys such as vector_layers are
+    // preserved.
     body = {
-      tilejson: "3.0.0",
-      name: meta.name,
-      description: meta.description,
-      version: meta.version,
-      attribution: meta.attribution,
-      scheme: meta.scheme,
-      format: meta.format,
-      minzoom: meta.minzoom,
-      maxzoom: meta.maxzoom,
-      bounds: meta.bounds,
-      center: meta.center,
-      vector_layers: meta.vector_layers,
+      ...meta,
       tiles,
     }
   } else {
