@@ -60,7 +60,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
       "Access-Control-Allow-Origin": "*",
       "Content-Type": "application/json",
       "Cache-Control": "public, max-age=300",
-      "Last-Modified": meta.lastModified,
+      "Last-Modified": mtime.toUTCString(),
     },
     body: JSON.stringify(body),
   };
