@@ -4,6 +4,7 @@ import {
   getMbtilesFilename,
   errorResponse,
 } from "./lib";
+import fs from 'fs/promises';
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   const version = event.pathParameters?.ver;
@@ -14,11 +15,19 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   if (!mbtiles) {
     return errorResponse(404, "not found");
   }
-  const meta = await getInfo(mbtiles);
+  const [
+    meta,
+    { mtime },
+  ] = await Promise.all([
+    getInfo(mbtiles),
+    fs.stat(mbtiles),
+  ]);
   let formatExt = "";
   if (meta.format) {
     formatExt = "." + meta.format;
   }
+  meta.lastModified = mtime.toISOString();
+
   const domainName = process.env.CLOUDFRONT_DOMAIN_NAME!.split(",")[0];
   const tiles = [
     `https://${domainName}/${version}/tiles/{z}/{x}/{y}${formatExt}?v=${encodeURIComponent(meta.version)}`,
@@ -51,6 +60,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
       "Access-Control-Allow-Origin": "*",
       "Content-Type": "application/json",
       "Cache-Control": "public, max-age=300",
+      "Last-Modified": mtime.toUTCString(),
     },
     body: JSON.stringify(body),
   };
