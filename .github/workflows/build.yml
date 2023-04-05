@@ -29,6 +29,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
 
+      - run: yarn
+      - run: yarn test
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
