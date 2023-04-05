@@ -4,7 +4,8 @@ on:
       - main
       - develop
   pull_request:
-    types: [opened, reopened]
+    branches:
+      - '*'
 
 jobs:
   build:
