@@ -1,0 +1,52 @@
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v3
+        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: ap-northeast-1
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCID }}:role/${{ secrets.AWS_DEPLOYMENT_ROLE_NAME }}
+
+      - name: Deploy (tagged version)
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          CLOUDFRONT_DOMAIN_NAME: ${{ secrets.CLOUDFRONT_DOMAIN_NAME_V1 }}
+          TRUSTED_KEY_GROUPS: ${{ secrets.TRUSTED_KEY_GROUPS_V1 }}
+          CLOUDFRONT_ACM_CERTIFICATE_ARN: ${{ secrets.CLOUDFRONT_ACM_CERTIFICATE_ARN_V1 }}
+        run: yarn deploy:v1
+
+      - name: Deploy (non-tagged version)
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        run: yarn deploy:dev
+        env:
+          CLOUDFRONT_DOMAIN_NAME: ${{ secrets.CLOUDFRONT_DOMAIN_NAME }}
+          TRUSTED_KEY_GROUPS: ${{ secrets.TRUSTED_KEY_GROUPS }}
+          CLOUDFRONT_ACM_CERTIFICATE_ARN: ${{ secrets.CLOUDFRONT_ACM_CERTIFICATE_ARN }}

@@ -1,5 +1,5 @@
-export AWS_ACCESS_KEY_ID=xxxx
-export AWS_SECRET_ACCESS_KEY=xxxx
+export AWS_ACCID=xxxx
+export AWS_DEPLOYMENT_ROLE_NAME=xxxx
 
 export TILESERVERLESS_SECURITY_GROUP_ID=sg-xxxx
 export TILESERVERLESS_SUBNET_ID=subnet-xxxx

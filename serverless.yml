@@ -1,23 +1,22 @@
 service: tileserverless
-variablesResolutionMode: 20210219
 
-frameworkVersion: ">=2.14.0 <3.0.0"
+frameworkVersion: ">=3.29.0 <4.0.0"
 
 package:
-  exclude:
-    - .git/**
-    - src/**
-    - docs/**
-    - .*
-    - tsconfig.*
-    - package-lock.json
-    - yarn.lock
-    - README.md
-    - serverless.yml
+  patterns:
+    - '!.git/**'
+    - '!src/**'
+    - '!docs/**'
+    - '!.*'
+    - '!tsconfig.*'
+    - '!package-lock.json'
+    - '!yarn.lock'
+    - '!README.md'
+    - '!serverless.yml'
 
 provider:
   name: aws
-  runtime: nodejs14.x
+  runtime: nodejs16.x
   memorySize: 256
   region: ap-northeast-1
   apiGateway:
@@ -25,7 +24,6 @@ provider:
 
   versionFunctions: false
   logRetentionInDays: 30
-  lambdaHashingVersion: "20201221"
   stage: ${opt:stage, 'dev'}
   deploymentBucket:
     name: geolonia-slsdeploymentbucket-${self:provider.region}
