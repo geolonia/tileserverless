@@ -43,7 +43,7 @@ jobs:
           aws-region: ap-northeast-1
 
       - name: Deploy (tagged version)
-        if: github.ref == refs/heads/main'
+        if: github.ref == refs/heads/main
         run: yarn deploy:v1
         env:
           TILESERVERLESS_SECURITY_GROUP_ID: ${{ secrets.TILESERVERLESS_SECURITY_GROUP_ID }}
@@ -55,7 +55,7 @@ jobs:
           CLOUDFRONT_ACM_CERTIFICATE_ARN: ${{ secrets.CLOUDFRONT_ACM_CERTIFICATE_ARN_V1 }}
 
       - name: Deploy (non-tagged version)
-        if: "github.ref == refs/heads/develop'
+        if: github.ref == refs/heads/develop
         run: yarn deploy:dev
         env:
           TILESERVERLESS_SECURITY_GROUP_ID: ${{ secrets.TILESERVERLESS_SECURITY_GROUP_ID }}
