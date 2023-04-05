@@ -1,9 +1,10 @@
 on:
   push:
     branches:
-      - master
-    tags:
-      - '*'
+      - main
+      - develop
+    pr:
+      - develop
 
 jobs:
   build:
@@ -34,12 +35,16 @@ jobs:
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
+        if: ->
+          github.ref == refs/heads/main' ||
+          github.ref == refs/heads/develop'
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCID }}:role/${{ secrets.AWS_DEPLOYMENT_ROLE_NAME }}
           aws-region: ap-northeast-1
 
       - name: Deploy (tagged version)
-        if: startsWith(github.ref, 'refs/tags/')
+        if: github.ref == refs/heads/main'
+        run: yarn deploy:v1
         env:
           TILESERVERLESS_SECURITY_GROUP_ID: ${{ secrets.TILESERVERLESS_SECURITY_GROUP_ID }}
           TILESERVERLESS_SUBNET_ID: ${{ secrets.TILESERVERLESS_SUBNET_ID }}
@@ -48,10 +53,9 @@ jobs:
           CLOUDFRONT_DOMAIN_NAME: ${{ secrets.CLOUDFRONT_DOMAIN_NAME_V1 }}
           TRUSTED_KEY_GROUPS: ${{ secrets.TRUSTED_KEY_GROUPS_V1 }}
           CLOUDFRONT_ACM_CERTIFICATE_ARN: ${{ secrets.CLOUDFRONT_ACM_CERTIFICATE_ARN_V1 }}
-        run: yarn deploy:v1
 
       - name: Deploy (non-tagged version)
-        if: "!startsWith(github.ref, 'refs/tags/')"
+        if: "github.ref == refs/heads/develop'
         run: yarn deploy:dev
         env:
           TILESERVERLESS_SECURITY_GROUP_ID: ${{ secrets.TILESERVERLESS_SECURITY_GROUP_ID }}
