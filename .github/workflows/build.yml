@@ -33,14 +33,18 @@ jobs:
       - run: yarn test
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-region: ap-northeast-1
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCID }}:role/${{ secrets.AWS_DEPLOYMENT_ROLE_NAME }}
+          aws-region: ap-northeast-1
 
       - name: Deploy (tagged version)
         if: startsWith(github.ref, 'refs/tags/')
         env:
+          TILESERVERLESS_SECURITY_GROUP_ID: ${{ secrets.TILESERVERLESS_SECURITY_GROUP_ID }}
+          TILESERVERLESS_SUBNET_ID: ${{ secrets.TILESERVERLESS_SUBNET_ID }}
+          TILESERVERLESS_FILESYSTEM_ACCESS_POINT_ID: ${{ secrets.TILESERVERLESS_FILESYSTEM_ACCESS_POINT_ID }}
+          TILESERVERLESS_FILESYSTEM_ID: ${{ secrets.TILESERVERLESS_FILESYSTEM_ID }}
           CLOUDFRONT_DOMAIN_NAME: ${{ secrets.CLOUDFRONT_DOMAIN_NAME_V1 }}
           TRUSTED_KEY_GROUPS: ${{ secrets.TRUSTED_KEY_GROUPS_V1 }}
           CLOUDFRONT_ACM_CERTIFICATE_ARN: ${{ secrets.CLOUDFRONT_ACM_CERTIFICATE_ARN_V1 }}
@@ -50,6 +54,10 @@ jobs:
         if: "!startsWith(github.ref, 'refs/tags/')"
         run: yarn deploy:dev
         env:
+          TILESERVERLESS_SECURITY_GROUP_ID: ${{ secrets.TILESERVERLESS_SECURITY_GROUP_ID }}
+          TILESERVERLESS_SUBNET_ID: ${{ secrets.TILESERVERLESS_SUBNET_ID }}
+          TILESERVERLESS_FILESYSTEM_ACCESS_POINT_ID: ${{ secrets.TILESERVERLESS_FILESYSTEM_ACCESS_POINT_ID }}
+          TILESERVERLESS_FILESYSTEM_ID: ${{ secrets.TILESERVERLESS_FILESYSTEM_ID }}
           CLOUDFRONT_DOMAIN_NAME: ${{ secrets.CLOUDFRONT_DOMAIN_NAME }}
           TRUSTED_KEY_GROUPS: ${{ secrets.TRUSTED_KEY_GROUPS }}
           CLOUDFRONT_ACM_CERTIFICATE_ARN: ${{ secrets.CLOUDFRONT_ACM_CERTIFICATE_ARN }}
