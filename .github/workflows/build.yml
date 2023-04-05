@@ -41,7 +41,7 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCID }}:role/${{ secrets.AWS_DEPLOYMENT_ROLE_NAME }}
           aws-region: ap-northeast-1
 
-      - name: Deploy (tagged version)
+      - name: Deploy v1
         if: github.ref == 'refs/heads/main'
         run: yarn deploy:v1
         env:
@@ -53,7 +53,7 @@ jobs:
           TRUSTED_KEY_GROUPS: ${{ secrets.TRUSTED_KEY_GROUPS_V1 }}
           CLOUDFRONT_ACM_CERTIFICATE_ARN: ${{ secrets.CLOUDFRONT_ACM_CERTIFICATE_ARN_V1 }}
 
-      - name: Deploy (non-tagged version)
+      - name: Deploy dev
         if: github.ref == 'refs/heads/develop'
         run: yarn deploy:dev
         env:
