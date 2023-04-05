@@ -5,6 +5,8 @@ import {
   errorResponse,
 } from "./lib";
 import fs from 'fs/promises';
+import path from "path";
+const { MOUNT_PATH } = process.env;
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   const version = event.pathParameters?.ver;
@@ -20,7 +22,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     { mtime },
   ] = await Promise.all([
     getInfo(mbtiles),
-    fs.stat(mbtiles),
+    fs.stat(path.join(MOUNT_PATH, mbtiles)),
   ]);
   let formatExt = "";
   if (meta.format) {
