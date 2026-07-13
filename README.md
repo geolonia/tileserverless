@@ -7,6 +7,15 @@ Includes:
 - Lambda & API Gateway
 - CloudFront CDN
 
+## ブランチ運用ルール（重要）
+
+- このリポジトリの default branch は `develop` です。GitHub の organization rule (branch protection) が保護しているのはこの `develop` のみで、`main` は保護対象外です。
+- ただし `main` が組織ルールで保護されていない場合であっても、`develop` を経由せず `main` へ直接変更を加えることは禁止です。
+- `main` への直接変更は、staging 環境での動作確認をスキップして production 環境へ変更を適用することを意味するため、原則として許可されません。
+- production 環境が staging 環境よりも進んでいる（内容が乖離している）状態を発生させてはいけません。
+- PR は必ず `develop` を経由して `main` に取り込んでください。feature/fix ブランチは `develop` から作成し、`develop` を base に PR を作成してください。
+- PR の base branch を `main` に向けてはいけません。
+
 ## Prerequisite
 
 - AWS resource
