@@ -74,9 +74,9 @@ const getMBTilesInstance = (filename: string) => {
     }
 
     if (MBTILES_LRU_INDEX.length >= MBTILES_CACHE_MAX) {
-      const idxToDelete = MBTILES_LRU_INDEX.length - MBTILES_CACHE_MAX;
+      const idxToDelete = MBTILES_LRU_INDEX.length - MBTILES_CACHE_MAX + 1;
       const filenamesToDelete = MBTILES_LRU_INDEX.splice(0, idxToDelete);
-      for (const toDel in filenamesToDelete) {
+      for (const toDel of filenamesToDelete) {
         delete MBTILES_CACHE[toDel];
       }
     }
