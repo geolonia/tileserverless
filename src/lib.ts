@@ -22,8 +22,8 @@ export const parseTilePath = (params?: APIGatewayProxyEventPathParameters) => {
   if (!params) return null;
 
   const { x, y, z } = params;
-  const invalidTileXYZ = [x, y, z].every((val) => {
-    if (!val) return false;
+  const invalidTileXYZ = [x, y, z].some((val) => {
+    if (!val) return true;
     const num = parseInt(val, 10);
     return Number.isNaN(num) || num < 0;
   });
@@ -74,9 +74,10 @@ const getMBTilesInstance = (filename: string) => {
     }
 
     if (MBTILES_LRU_INDEX.length >= MBTILES_CACHE_MAX) {
-      const idxToDelete = MBTILES_LRU_INDEX.length - MBTILES_CACHE_MAX;
-      const filenamesToDelete = MBTILES_LRU_INDEX.splice(0, idxToDelete);
-      for (const toDel in filenamesToDelete) {
+      // Make room for the instance that is about to be added.
+      const countToDelete = MBTILES_LRU_INDEX.length - MBTILES_CACHE_MAX + 1;
+      const keysToDelete = MBTILES_LRU_INDEX.splice(0, countToDelete);
+      for (const toDel of keysToDelete) {
         delete MBTILES_CACHE[toDel];
       }
     }

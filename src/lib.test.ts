@@ -62,13 +62,11 @@ describe("parseTilePath", () => {
     expect(parseTilePath({x: "a", y: "-1", z: "b"})).toBeNull();
   });
 
-  // Known bug: the check uses `every`, so a path is rejected only when all
-  // of x, y and z are invalid. Remove `.failing` when it is fixed.
-  it.failing("returns null when one of x, y and z is invalid", () => {
+  it("returns null when one of x, y and z is invalid", () => {
     expect(parseTilePath({x: "a", y: "1", z: "1"})).toBeNull();
   });
 
-  it.failing("returns null when one of x, y and z is missing", () => {
+  it("returns null when one of x, y and z is missing", () => {
     expect(parseTilePath({y: "1", z: "1"})).toBeNull();
   });
 });

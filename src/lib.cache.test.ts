@@ -85,16 +85,27 @@ describe("MBTiles instance cache", () => {
     expect(MockMBTiles).toHaveBeenCalledTimes(2);
   });
 
-  // Known bug: the eviction never removes an instance (`for...in` iterates
-  // over indices, and nothing is removed when the cache is exactly full), so
-  // the cache grows without limit. Remove `.failing` when it is fixed.
-  it.failing("evicts the least recently used instance when the cache is full", async () => {
+  it("evicts the least recently used instance when the cache is full", async () => {
     const files = Array.from({ length: 7 }, newFile);
     for (const filename of files) {
       await getInfo(filename);
     }
     MockMBTiles.mockClear();
     await getInfo(files[0]);
+    expect(MockMBTiles).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps a recently used instance when the cache is full", async () => {
+    const files = Array.from({ length: 6 }, newFile);
+    for (const filename of files) {
+      await getInfo(filename);
+    }
+    await getInfo(files[0]);
+    await getInfo(newFile());
+    MockMBTiles.mockClear();
+    await getInfo(files[0]);
+    expect(MockMBTiles).not.toHaveBeenCalled();
+    await getInfo(files[1]);
     expect(MockMBTiles).toHaveBeenCalledTimes(1);
   });
 });
