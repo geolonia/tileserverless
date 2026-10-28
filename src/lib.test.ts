@@ -50,7 +50,7 @@ describe("parseTilePath", () => {
     expect(y).toEqual("12");
   });
 
-  it.each([["2.pbf"], ["2.mvt"], ["2.png"]])("keeps the extension of y: %s", (y) => {
+  it.each([["2.pbf"], ["2.mvt"], ["2.png"], ["2.webp"], ["2.jpg"]])("keeps the extension of y: %s", (y) => {
     expect(parseTilePath({x: "1", y, z: "3"})).toEqual({x: "1", y, z: "3"});
   });
 
@@ -71,6 +71,8 @@ describe("parseTilePath", () => {
     ["y has trailing characters", {x: "1", y: "1abc", z: "1"}],
     ["y has an empty extension", {x: "1", y: "1.", z: "1"}],
     ["y has two extensions", {x: "1", y: "1.pbf.gz", z: "1"}],
+    ["y is a decimal", {x: "1", y: "0.5", z: "1"}],
+    ["y has an extension starting with a digit", {x: "1", y: "1.5x", z: "1"}],
     ["z has trailing characters", {x: "1", y: "1", z: "1abc"}],
     ["z is a decimal", {x: "1", y: "1", z: "1.5"}],
   ])("returns null when %s", (_, params) => {

@@ -19,13 +19,14 @@ export const errorResponse = (status: number, message: string) => ({
 });
 
 const TILE_XZ = /^\d+$/;
-const TILE_Y = /^\d+(\.\w+)?$/;
+const TILE_Y = /^\d+(\.[A-Za-z][A-Za-z0-9]*)?$/;
 
 export const parseTilePath = (params?: APIGatewayProxyEventPathParameters) => {
   if (!params) return null;
 
   const { x, y, z } = params;
-  // x and z are non-negative integers. y may have an extension such as `.pbf`.
+  // x and z are non-negative integers. y may have an extension such as `.pbf`,
+  // which starts with a letter so that a decimal such as `0.5` is rejected.
   if (!x || !y || !z || !TILE_XZ.test(x) || !TILE_Y.test(y) || !TILE_XZ.test(z)) {
     return null;
   }
