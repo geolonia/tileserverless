@@ -100,14 +100,30 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCID }}:role/${{ secrets.AWS_DEPLOYMENT_ROLE_NAME }}
           aws-region: ap-northeast-1
 
+      # The logs of this public repository must not show the API endpoint:
+      # clients reach it through CloudFront. Mask the ID of an existing stack
+      # here, and drop the stack outputs from the sam deploy log below (they
+      # hold the ID of a new stack, which can't be masked before it exists).
+      - name: Mask the API ID
+        env:
+          STACK_NAME: ${{ github.ref == 'refs/heads/main' && 'tileserverless-sam-v1' || 'tileserverless-sam-dev' }}
+        run: |
+          api_id="$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" \
+            --query "Stacks[0].Outputs[?OutputKey=='HttpApiId'].OutputValue" --output text 2>/dev/null || true)"
+          if [ -n "$api_id" ] && [ "$api_id" != None ]; then
+            echo "::add-mask::$api_id"
+          fi
+
       - name: Deploy v1
         if: github.ref == 'refs/heads/main'
         run: |
+          set -o pipefail
           sam deploy --config-env v1 --parameter-overrides \
             "Stage=v1" "NameSuffix=-sam" \
             "SecurityGroupIds=$SECURITY_GROUP_IDS" "SubnetIds=$SUBNET_IDS" \
             "FileSystemAccessPointId=$FILESYSTEM_ACCESS_POINT_ID" \
-            "CloudFrontDomainName=$CLOUDFRONT_DOMAIN_NAME"
+            "CloudFrontDomainName=$CLOUDFRONT_DOMAIN_NAME" \
+            | sed '/CloudFormation outputs from deployed stack/,$d'
         env:
           SECURITY_GROUP_IDS: ${{ secrets.TILESERVERLESS_SECURITY_GROUP_ID }}
           SUBNET_IDS: ${{ secrets.TILESERVERLESS_SUBNET_ID }}
@@ -117,11 +133,13 @@ jobs:
       - name: Deploy dev
         if: github.ref == 'refs/heads/develop'
         run: |
+          set -o pipefail
           sam deploy --config-env default --parameter-overrides \
             "Stage=dev" "NameSuffix=-sam" \
             "SecurityGroupIds=$SECURITY_GROUP_IDS" "SubnetIds=$SUBNET_IDS" \
             "FileSystemAccessPointId=$FILESYSTEM_ACCESS_POINT_ID" \
-            "CloudFrontDomainName=$CLOUDFRONT_DOMAIN_NAME"
+            "CloudFrontDomainName=$CLOUDFRONT_DOMAIN_NAME" \
+            | sed '/CloudFormation outputs from deployed stack/,$d'
         env:
           SECURITY_GROUP_IDS: ${{ secrets.TILESERVERLESS_SECURITY_GROUP_ID }}
           SUBNET_IDS: ${{ secrets.TILESERVERLESS_SUBNET_ID }}
@@ -138,4 +156,9 @@ jobs:
         run: |
           api_url="$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" \
             --query "Stacks[0].Outputs[?OutputKey=='HttpApiUrl'].OutputValue" --output text)"
+          api_id="${api_url#https://}"
+          echo "::add-mask::${api_id%%.*}"
+          if [ -n "$SMOKE_TEST_TILESET" ]; then
+            echo "::add-mask::$SMOKE_TEST_TILESET"
+          fi
           node scripts/check-deployment.js "$api_url" ${SMOKE_TEST_TILESET:+"$SMOKE_TEST_TILESET"}
