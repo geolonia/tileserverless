@@ -15,6 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    strategy:
+      matrix:
+        node-version: [22, 24]
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -22,16 +25,51 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 16
+          node-version: ${{ matrix.node-version }}
           cache: yarn
 
       - run: yarn install --frozen-lockfile
       - run: yarn test
 
+  # Builds the Lambda package the same way as `sam build` (Makefile) and runs it
+  # in the Lambda Node.js 24 base image, so that a sqlite3 binary that does not
+  # load on the Lambda OS fails here instead of in the deployed functions.
+  package:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: yarn
+
+      - run: yarn install --frozen-lockfile
+      - run: yarn build
+      - run: make build-TileFunction ARTIFACTS_DIR="$RUNNER_TEMP/package"
+      - name: Smoke test in the Lambda base image
+        env:
+          # public.ecr.aws/lambda/nodejs:24
+          LAMBDA_IMAGE: public.ecr.aws/lambda/nodejs@sha256:be4c68f4a679e86ff3539675f27aedb3fada5bd2bbf885875c0ca7c32ac6f2bd
+        run: |
+          docker run --rm --platform linux/amd64 \
+            -v "$RUNNER_TEMP/package:/var/task:ro" \
+            -v "$PWD/scripts:/smoke:ro" \
+            --entrypoint node "$LAMBDA_IMAGE" /smoke/smoke-test-package.js /var/task
+
   deploy:
-    needs: test
+    needs: [test, package]
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Do not run two deployments of the same stage at once.
+    concurrency:
+      group: deploy-${{ github.ref }}
+      cancel-in-progress: false
     permissions:
       id-token: write
       contents: read
@@ -44,9 +82,17 @@ jobs:
       # reach the job that holds the AWS credentials.
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 16
+          node-version: 24
 
       - run: yarn install --frozen-lockfile
+      - run: yarn build
+
+      - uses: aws-actions/setup-sam@341eee193f458fa5aae5d52c94b0c5cf3a1c5a52 # v3
+        with:
+          version: 1.169.0
+          use-installer: true
+
+      - run: sam build
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
@@ -56,24 +102,28 @@ jobs:
 
       - name: Deploy v1
         if: github.ref == 'refs/heads/main'
-        run: yarn deploy:v1
+        run: |
+          sam deploy --config-env v1 --parameter-overrides \
+            "Stage=v1" "NameSuffix=-sam" \
+            "SecurityGroupIds=$SECURITY_GROUP_IDS" "SubnetIds=$SUBNET_IDS" \
+            "FileSystemAccessPointId=$FILESYSTEM_ACCESS_POINT_ID" \
+            "CloudFrontDomainName=$CLOUDFRONT_DOMAIN_NAME"
         env:
-          TILESERVERLESS_SECURITY_GROUP_ID: ${{ secrets.TILESERVERLESS_SECURITY_GROUP_ID }}
-          TILESERVERLESS_SUBNET_ID: ${{ secrets.TILESERVERLESS_SUBNET_ID }}
-          TILESERVERLESS_FILESYSTEM_ACCESS_POINT_ID: ${{ secrets.TILESERVERLESS_FILESYSTEM_ACCESS_POINT_ID }}
-          TILESERVERLESS_FILESYSTEM_ID: ${{ secrets.TILESERVERLESS_FILESYSTEM_ID }}
+          SECURITY_GROUP_IDS: ${{ secrets.TILESERVERLESS_SECURITY_GROUP_ID }}
+          SUBNET_IDS: ${{ secrets.TILESERVERLESS_SUBNET_ID }}
+          FILESYSTEM_ACCESS_POINT_ID: ${{ secrets.TILESERVERLESS_FILESYSTEM_ACCESS_POINT_ID }}
           CLOUDFRONT_DOMAIN_NAME: ${{ secrets.CLOUDFRONT_DOMAIN_NAME_V1 }}
-          TRUSTED_KEY_GROUPS: ${{ secrets.TRUSTED_KEY_GROUPS_V1 }}
-          CLOUDFRONT_ACM_CERTIFICATE_ARN: ${{ secrets.CLOUDFRONT_ACM_CERTIFICATE_ARN_V1 }}
 
       - name: Deploy dev
         if: github.ref == 'refs/heads/develop'
-        run: yarn deploy:dev
+        run: |
+          sam deploy --config-env default --parameter-overrides \
+            "Stage=dev" "NameSuffix=-sam" \
+            "SecurityGroupIds=$SECURITY_GROUP_IDS" "SubnetIds=$SUBNET_IDS" \
+            "FileSystemAccessPointId=$FILESYSTEM_ACCESS_POINT_ID" \
+            "CloudFrontDomainName=$CLOUDFRONT_DOMAIN_NAME"
         env:
-          TILESERVERLESS_SECURITY_GROUP_ID: ${{ secrets.TILESERVERLESS_SECURITY_GROUP_ID }}
-          TILESERVERLESS_SUBNET_ID: ${{ secrets.TILESERVERLESS_SUBNET_ID }}
-          TILESERVERLESS_FILESYSTEM_ACCESS_POINT_ID: ${{ secrets.TILESERVERLESS_FILESYSTEM_ACCESS_POINT_ID }}
-          TILESERVERLESS_FILESYSTEM_ID: ${{ secrets.TILESERVERLESS_FILESYSTEM_ID }}
+          SECURITY_GROUP_IDS: ${{ secrets.TILESERVERLESS_SECURITY_GROUP_ID }}
+          SUBNET_IDS: ${{ secrets.TILESERVERLESS_SUBNET_ID }}
+          FILESYSTEM_ACCESS_POINT_ID: ${{ secrets.TILESERVERLESS_FILESYSTEM_ACCESS_POINT_ID }}
           CLOUDFRONT_DOMAIN_NAME: ${{ secrets.CLOUDFRONT_DOMAIN_NAME }}
-          TRUSTED_KEY_GROUPS: ${{ secrets.TRUSTED_KEY_GROUPS }}
-          CLOUDFRONT_ACM_CERTIFICATE_ARN: ${{ secrets.CLOUDFRONT_ACM_CERTIFICATE_ARN }}

@@ -1,0 +1,43 @@
+version = 0.1
+
+# -----------------------------------------------------------------------------
+# dev environment (default)
+# Deploys a new SAM stack alongside the Serverless Framework stack
+# (tileserverless-dev), which it does not touch. CloudFront is switched to the
+# new stack in tileserverless-infra.
+#
+# The VPC, EFS and CloudFront parameters are passed with --parameter-overrides
+# (see .github/workflows/build.yml and README.md).
+# -----------------------------------------------------------------------------
+[default.global.parameters]
+stack_name = "tileserverless-sam-dev"
+
+[default.build.parameters]
+parallel = true
+
+[default.deploy.parameters]
+stack_name = "tileserverless-sam-dev"
+s3_bucket = "geolonia-slsdeploymentbucket-ap-northeast-1"
+s3_prefix = "tileserverless-sam-dev"
+region = "ap-northeast-1"
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = false
+fail_on_empty_changeset = false
+
+# -----------------------------------------------------------------------------
+# v1 environment
+# -----------------------------------------------------------------------------
+[v1.global.parameters]
+stack_name = "tileserverless-sam-v1"
+
+[v1.build.parameters]
+parallel = true
+
+[v1.deploy.parameters]
+stack_name = "tileserverless-sam-v1"
+s3_bucket = "geolonia-slsdeploymentbucket-ap-northeast-1"
+s3_prefix = "tileserverless-sam-v1"
+region = "ap-northeast-1"
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = false
+fail_on_empty_changeset = false

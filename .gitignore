@@ -64,7 +64,9 @@ typings/
 .next
 
 /dist
-.serverless
 
 # use yarn only
 package-lock.json
+
+# AWS SAM
+.aws-sam

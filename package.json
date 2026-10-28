@@ -2,13 +2,15 @@
   "name": "tileserverless",
   "description": "A Serverless Tile Server Kit.",
   "version": "2.7.1",
-  "main": "serverless.yml",
   "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "test": "jest --coverage",
     "build": "tsc",
-    "deploy:dev": "yarn build && sls deploy --stage=dev",
-    "deploy:v1": "yarn build && sls deploy --stage=v1"
+    "sam:validate": "sam validate --lint",
+    "sam:build": "yarn build && sam build"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -47,15 +49,10 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.114",
     "@types/jest": "^29.5.0",
-    "@types/node": "^16",
-    "aws-sdk": "^2.1348.0",
+    "@types/node": "^22",
     "jest": "^29.5.0",
-    "serverless": "^3.29.0",
     "ts-jest": "^29.1.0",
     "typescript": "^5.0.3"
-  },
-  "peerDependencies": {
-    "aws-sdk": "^2"
   },
   "dependencies": {
     "@mapbox/mbtiles": "^0.12.1"
