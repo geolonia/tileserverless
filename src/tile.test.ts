@@ -59,6 +59,7 @@ describe("tile handler", () => {
     ["one coordinate is invalid", { z: "1", x: "a", y: "0" }],
     ["one coordinate is negative", { z: "1", x: "1", y: "-1" }],
     ["one coordinate is missing", { z: "1", y: "0" }],
+    ["one coordinate has trailing characters", { z: "1", x: "1abc", y: "0" }],
   ])("returns 400 when %s", async (_, coords) => {
     const resp = await invoke(handler, createEvent(ROUTE, { ver: "tile", ...coords }));
     expect(resp.statusCode).toBe(400);

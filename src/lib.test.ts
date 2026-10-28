@@ -50,24 +50,31 @@ describe("parseTilePath", () => {
     expect(y).toEqual("12");
   });
 
-  it("keeps the extension of y", () => {
-    expect(parseTilePath({x: "1", y: "2.pbf", z: "3"})).toEqual({x: "1", y: "2.pbf", z: "3"});
+  it.each([["2.pbf"], ["2.mvt"], ["2.png"]])("keeps the extension of y: %s", (y) => {
+    expect(parseTilePath({x: "1", y, z: "3"})).toEqual({x: "1", y, z: "3"});
   });
 
   it("returns null without parameters", () => {
     expect(parseTilePath(undefined)).toBeNull();
   });
 
-  it("returns null when x, y and z are all invalid", () => {
-    expect(parseTilePath({x: "a", y: "-1", z: "b"})).toBeNull();
-  });
-
-  it("returns null when one of x, y and z is invalid", () => {
-    expect(parseTilePath({x: "a", y: "1", z: "1"})).toBeNull();
-  });
-
-  it("returns null when one of x, y and z is missing", () => {
-    expect(parseTilePath({y: "1", z: "1"})).toBeNull();
+  it.each([
+    ["all are invalid", {x: "a", y: "-1", z: "b"}],
+    ["x is missing", {y: "1", z: "1"}],
+    ["y is missing", {x: "1", z: "1"}],
+    ["z is missing", {x: "1", y: "1"}],
+    ["x is not a number", {x: "a", y: "1", z: "1"}],
+    ["x is negative", {x: "-1", y: "1", z: "1"}],
+    ["x has trailing characters", {x: "1abc", y: "1", z: "1"}],
+    ["x has an extension", {x: "1.pbf", y: "1", z: "1"}],
+    ["y is negative", {x: "1", y: "-1", z: "1"}],
+    ["y has trailing characters", {x: "1", y: "1abc", z: "1"}],
+    ["y has an empty extension", {x: "1", y: "1.", z: "1"}],
+    ["y has two extensions", {x: "1", y: "1.pbf.gz", z: "1"}],
+    ["z has trailing characters", {x: "1", y: "1", z: "1abc"}],
+    ["z is a decimal", {x: "1", y: "1", z: "1.5"}],
+  ])("returns null when %s", (_, params) => {
+    expect(parseTilePath(params)).toBeNull();
   });
 });
 

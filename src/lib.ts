@@ -18,20 +18,18 @@ export const errorResponse = (status: number, message: string) => ({
   })
 });
 
+const TILE_XZ = /^\d+$/;
+const TILE_Y = /^\d+(\.\w+)?$/;
+
 export const parseTilePath = (params?: APIGatewayProxyEventPathParameters) => {
   if (!params) return null;
 
   const { x, y, z } = params;
-  const invalidTileXYZ = [x, y, z].some((val) => {
-    if (!val) return true;
-    const num = parseInt(val, 10);
-    return Number.isNaN(num) || num < 0;
-  });
-  if (invalidTileXYZ) {
+  // x and z are non-negative integers. y may have an extension such as `.pbf`.
+  if (!x || !y || !z || !TILE_XZ.test(x) || !TILE_Y.test(y) || !TILE_XZ.test(z)) {
     return null;
   }
-  // At this point, we know that all x, y, and z exist.
-  return { x, y, z } as { x: string, y: string, z: string };
+  return { x, y, z };
 };
 
 export const getMbtilesFilename = async (version: string) => {
