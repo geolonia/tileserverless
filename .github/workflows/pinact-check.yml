@@ -1,0 +1,11 @@
+name: Action Pinning Check
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+permissions:
+  contents: read
+jobs:
+  pinact:
+    uses: geolonia/.github/.github/workflows/reusable-pinact-check.yml@v1
