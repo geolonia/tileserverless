@@ -1,9 +1,6 @@
 import fs from "fs";
-import { handler } from "./meta";
+import { handler, ROUTE_METADATA_JSON, ROUTE_TILES_JSON } from "./meta";
 import { createEvent, createMbtiles, invoke } from "../__test__/helpers";
-
-const TILES_JSON = "GET /{ver}/tiles.json";
-const METADATA_JSON = "GET /{ver}/metadata.json";
 
 const vectorLayers = [{ id: "layer", fields: { name: "String" } }];
 let file: string;
@@ -25,7 +22,7 @@ beforeAll(async () => {
 
 describe("meta handler", () => {
   it("returns tiles.json", async () => {
-    const resp = await invoke(handler, createEvent(TILES_JSON, { ver: "meta" }));
+    const resp = await invoke(handler, createEvent(ROUTE_TILES_JSON, { ver: "meta" }));
     const { mtime } = fs.statSync(file);
 
     expect(resp.statusCode).toBe(200);
@@ -54,7 +51,7 @@ describe("meta handler", () => {
   });
 
   it("returns metadata.json without tile URLs", async () => {
-    const resp = await invoke(handler, createEvent(METADATA_JSON, { ver: "meta" }));
+    const resp = await invoke(handler, createEvent(ROUTE_METADATA_JSON, { ver: "meta" }));
     expect(resp.statusCode).toBe(200);
 
     const body = JSON.parse(resp.body as string);
@@ -63,13 +60,13 @@ describe("meta handler", () => {
   });
 
   it("keeps `$` of the version in tile URLs", async () => {
-    const resp = await invoke(handler, createEvent(TILES_JSON, { ver: "nested$meta" }));
+    const resp = await invoke(handler, createEvent(ROUTE_TILES_JSON, { ver: "nested$meta" }));
     const body = JSON.parse(resp.body as string);
     expect(body.tiles[0]).toMatch(/^https:\/\/tiles\.example\.com\/nested\$meta\/tiles\//);
   });
 
   it("omits the extension when the tileset has no format", async () => {
-    const resp = await invoke(handler, createEvent(TILES_JSON, { ver: "no-format" }));
+    const resp = await invoke(handler, createEvent(ROUTE_TILES_JSON, { ver: "no-format" }));
     const body = JSON.parse(resp.body as string);
     expect(body.tiles).toEqual([
       "https://tiles.example.com/no-format/tiles/{z}/{x}/{y}?v=1.0.0%2Bbuild",
@@ -77,12 +74,12 @@ describe("meta handler", () => {
   });
 
   it("returns 404 without a version", async () => {
-    const resp = await invoke(handler, createEvent(TILES_JSON));
+    const resp = await invoke(handler, createEvent(ROUTE_TILES_JSON));
     expect(resp.statusCode).toBe(404);
   });
 
   it("returns 404 when the tileset does not exist", async () => {
-    const resp = await invoke(handler, createEvent(TILES_JSON, { ver: "missing" }));
+    const resp = await invoke(handler, createEvent(ROUTE_TILES_JSON, { ver: "missing" }));
     expect(resp.statusCode).toBe(404);
   });
 

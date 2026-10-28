@@ -1,0 +1,151 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: tileserverless (SAM)
+
+Parameters:
+  Stage:
+    Type: String
+    AllowedValues:
+      - dev
+      - v1
+    Description: Deployment stage name. Must match the samconfig.toml environment.
+  NameSuffix:
+    Type: String
+    Default: "-sam"
+    Description: |
+      Suffix appended to the Lambda function names, to avoid name collisions with
+      the Serverless Framework functions (tileserverless-<stage>-tile, -meta)
+      until those stacks are deleted.
+  SecurityGroupIds:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+    Description: Security groups of the Lambda functions. Must reach EFS (TCP 2049).
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Subnets of the Lambda functions, in the VPC of EFS.
+  FileSystemAccessPointId:
+    Type: String
+    Description: EFS access point that holds the .mbtiles files (fsap-xxxx).
+  CloudFrontDomainName:
+    Type: String
+    Description: |
+      Comma-separated domain names of the CDN. The first one is used in tiles.json.
+
+Globals:
+  Function:
+    Runtime: nodejs24.x
+    Architectures:
+      - x86_64
+    MemorySize: 256
+    Timeout: 6
+    CodeUri: .
+    VpcConfig:
+      SecurityGroupIds: !Ref SecurityGroupIds
+      SubnetIds: !Ref SubnetIds
+    Environment:
+      Variables:
+        MOUNT_PATH: /mnt/efs
+        CLOUDFRONT_DOMAIN_NAME: !Ref CloudFrontDomainName
+
+Resources:
+  # The $default stage (no StageName) keeps the paths without a stage prefix,
+  # as with the Serverless Framework deployment that CloudFront points to.
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins:
+          - "*"
+        AllowHeaders:
+          - Content-Type
+        AllowMethods:
+          - GET
+        MaxAge: 6000
+
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      Policies:
+        - PolicyName: efs
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - elasticfilesystem:ClientMount
+                  - elasticfilesystem:ClientWrite
+                Resource: !Sub arn:${AWS::Partition}:elasticfilesystem:${AWS::Region}:${AWS::AccountId}:access-point/${FileSystemAccessPointId}
+
+  TileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub tileserverless-${Stage}-tile${NameSuffix}
+      Role: !GetAtt LambdaRole.Arn
+      FileSystemConfigs:
+        - Arn: !Sub arn:${AWS::Partition}:elasticfilesystem:${AWS::Region}:${AWS::AccountId}:access-point/${FileSystemAccessPointId}
+          LocalMountPath: /mnt/efs
+      Handler: dist/tile.handler
+      Events:
+        Tile:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Method: GET
+            # The tile handler removes the extension of {y} (e.g. .pbf).
+            Path: /{ver}/tiles/{z}/{x}/{y}
+    Metadata:
+      BuildMethod: makefile
+
+  TileFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${TileFunction}
+      RetentionInDays: 30
+
+  MetaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub tileserverless-${Stage}-meta${NameSuffix}
+      Role: !GetAtt LambdaRole.Arn
+      FileSystemConfigs:
+        - Arn: !Sub arn:${AWS::Partition}:elasticfilesystem:${AWS::Region}:${AWS::AccountId}:access-point/${FileSystemAccessPointId}
+          LocalMountPath: /mnt/efs
+      Handler: dist/meta.handler
+      Events:
+        TilesJson:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Method: GET
+            Path: /{ver}/tiles.json
+        MetadataJson:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Method: GET
+            Path: /{ver}/metadata.json
+    Metadata:
+      BuildMethod: makefile
+
+  MetaFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${MetaFunction}
+      RetentionInDays: 30
+
+Outputs:
+  # tileserverless-infra builds the CloudFront origin from this output.
+  HttpApiId:
+    Description: HTTP API ID
+    Value: !Ref HttpApi
+  HttpApiUrl:
+    Description: HTTP API endpoint URL
+    Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}
