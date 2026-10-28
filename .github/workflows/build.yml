@@ -7,36 +7,49 @@ on:
     branches:
       - '*'
 
+permissions:
+  contents: read
+
 jobs:
-  build:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 16
+          cache: yarn
+
+      - run: yarn install --frozen-lockfile
+      - run: yarn test
+
+  deploy:
+    needs: test
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
     runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # No dependency cache here: a cache written by a pull request run must not
+      # reach the job that holds the AWS credentials.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 16
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
 
-      - uses: actions/cache@v3
-        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - run: yarn
-      - run: yarn test
+      - run: yarn install --frozen-lockfile
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCID }}:role/${{ secrets.AWS_DEPLOYMENT_ROLE_NAME }}
           aws-region: ap-northeast-1
