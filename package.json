@@ -5,7 +5,7 @@
   "main": "serverless.yml",
   "license": "MIT",
   "scripts": {
-    "test": "jest",
+    "test": "jest --coverage",
     "build": "tsc",
     "deploy:dev": "yarn build && sls deploy --stage=dev",
     "deploy:v1": "yarn build && sls deploy --stage=v1"
@@ -22,6 +22,26 @@
           "tsconfig": "tsconfig.json"
         }
       ]
+    },
+    "setupFilesAfterEnv": [
+      "<rootDir>/__test__/setup.ts"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.ts",
+      "!src/**/*.d.ts",
+      "!src/**/*.test.ts"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      }
     }
   },
   "devDependencies": {
