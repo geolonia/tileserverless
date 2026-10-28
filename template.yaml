@@ -5,15 +5,17 @@ Description: tileserverless (SAM)
 Parameters:
   Stage:
     Type: String
-    Default: dev
-    Description: Deployment stage name (dev, v1).
+    AllowedValues:
+      - dev
+      - v1
+    Description: Deployment stage name. Must match the samconfig.toml environment.
   NameSuffix:
     Type: String
-    Default: ""
+    Default: "-sam"
     Description: |
-      Suffix appended to the Lambda function names. Used to avoid name collisions
-      with the Serverless Framework deployment during the parallel rollout
-      (e.g. "-sam").
+      Suffix appended to the Lambda function names, to avoid name collisions with
+      the Serverless Framework functions (tileserverless-<stage>-tile, -meta)
+      until those stacks are deleted.
   SecurityGroupIds:
     Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Security groups of the Lambda functions. Must reach EFS (TCP 2049).

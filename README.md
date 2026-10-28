@@ -36,7 +36,7 @@ $ yarn test
 
 Deployment uses AWS SAM (`template.yaml`, `samconfig.toml`). GitHub Actions deploys `develop` to the `dev` stage (stack `tileserverless-sam-dev`) and `main` to the `v1` stage (stack `tileserverless-sam-v1`).
 
-`sam build` installs the production dependencies with the `Makefile`. They include sqlite3, a native module, so build on Linux x86_64 to get a binary that runs on Lambda.
+`sam build` installs the production dependencies with the `Makefile`. They include sqlite3, a native module, so build on Linux x86_64 to get a binary that runs on Lambda. The `Makefile` stops on other platforms.
 
 To deploy by hand:
 

@@ -13,6 +13,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
     strategy:
@@ -36,6 +37,7 @@ jobs:
   # load on the Lambda OS fails here instead of in the deployed functions.
   package:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
 
@@ -52,14 +54,7 @@ jobs:
       - run: yarn build
       - run: make build-TileFunction ARTIFACTS_DIR="$RUNNER_TEMP/package"
       - name: Smoke test in the Lambda base image
-        env:
-          # public.ecr.aws/lambda/nodejs:24
-          LAMBDA_IMAGE: public.ecr.aws/lambda/nodejs@sha256:be4c68f4a679e86ff3539675f27aedb3fada5bd2bbf885875c0ca7c32ac6f2bd
-        run: |
-          docker run --rm --platform linux/amd64 \
-            -v "$RUNNER_TEMP/package:/var/task:ro" \
-            -v "$PWD/scripts:/smoke:ro" \
-            --entrypoint node "$LAMBDA_IMAGE" /smoke/smoke-test-package.js /var/task
+        run: scripts/smoke-test-in-lambda-image.sh "$RUNNER_TEMP/package"
 
   deploy:
     needs: [test, package]
@@ -93,6 +88,10 @@ jobs:
           use-installer: true
 
       - run: sam build
+      # The package deployed is built here, not in the package job, so test it too.
+      # Runs before the AWS credentials are configured.
+      - name: Smoke test the built functions in the Lambda base image
+        run: scripts/smoke-test-in-lambda-image.sh .aws-sam/build/TileFunction .aws-sam/build/MetaFunction
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
