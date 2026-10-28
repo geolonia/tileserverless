@@ -55,6 +55,19 @@ $ sam deploy --config-env default --parameter-overrides \
 
 Use `--config-env v1` and `Stage=v1` for the `v1` stage.
 
+After a deployment, check the API (CI does this too):
+
+```shell
+$ node scripts/check-deployment.js https://XXXXX.execute-api.ap-northeast-1.amazonaws.com [tileset]
+```
+
+To compare two deployments, for example before switching CloudFront to a new stack:
+
+```shell
+$ node scripts/compare-endpoints.js https://OLD.execute-api.ap-northeast-1.amazonaws.com https://NEW.execute-api.ap-northeast-1.amazonaws.com \
+    /tileset/tiles.json /tileset/metadata.json /tileset/tiles/0/0/0.pbf
+```
+
 ## Removal
 
 ```shell

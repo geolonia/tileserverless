@@ -30,6 +30,7 @@ jobs:
           cache: yarn
 
       - run: yarn install --frozen-lockfile
+      - run: yarn build
       - run: yarn test
 
   # Builds the Lambda package the same way as `sam build` (Makefile) and runs it
@@ -126,3 +127,15 @@ jobs:
           SUBNET_IDS: ${{ secrets.TILESERVERLESS_SUBNET_ID }}
           FILESYSTEM_ACCESS_POINT_ID: ${{ secrets.TILESERVERLESS_FILESYSTEM_ACCESS_POINT_ID }}
           CLOUDFRONT_DOMAIN_NAME: ${{ secrets.CLOUDFRONT_DOMAIN_NAME }}
+
+      # Requests the new API directly (not through CloudFront). Set the
+      # repository variable SMOKE_TEST_TILESET to a tileset on EFS to also check
+      # 200 responses; without it, only the handlers' 404 for a missing tileset.
+      - name: Check the deployed API
+        env:
+          STACK_NAME: ${{ github.ref == 'refs/heads/main' && 'tileserverless-sam-v1' || 'tileserverless-sam-dev' }}
+          SMOKE_TEST_TILESET: ${{ vars.SMOKE_TEST_TILESET }}
+        run: |
+          api_url="$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" \
+            --query "Stacks[0].Outputs[?OutputKey=='HttpApiUrl'].OutputValue" --output text)"
+          node scripts/check-deployment.js "$api_url" ${SMOKE_TEST_TILESET:+"$SMOKE_TEST_TILESET"}
