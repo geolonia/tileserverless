@@ -58,7 +58,7 @@ Use `--config-env v1` and `Stage=v1` for the `v1` stage.
 After a deployment, check the API (CI does this too):
 
 ```shell
-$ node scripts/check-deployment.js https://XXXXX.execute-api.ap-northeast-1.amazonaws.com [tileset]
+$ node scripts/check-deployment.js https://XXXXX.execute-api.ap-northeast-1.amazonaws.com [tileset [z/x/y]]
 ```
 
 To compare two deployments, for example before switching CloudFront to a new stack:

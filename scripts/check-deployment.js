@@ -1,6 +1,6 @@
 // Checks a deployed tileserverless HTTP API.
 //
-//   node scripts/check-deployment.js <base URL> [tileset]
+//   node scripts/check-deployment.js <base URL> [tileset [z/x/y]]
 //
 // Without a tileset, requests a tileset that does not exist on all three
 // routes and expects the handlers' own 404 response. That proves the route
@@ -9,16 +9,26 @@
 //
 // With a tileset (the {ver} part of the URL), also expects 200 from
 // tiles.json and metadata.json, a tile URL in tiles.json, and 200 from the
-// tile at the center of the tileset (tiles.json "center", or the middle of
-// "bounds") at its minimum zoom.
+// tile z/x/y. Without z/x/y, the tile at the center of the tileset
+// (tiles.json "center", or the middle of "bounds") at its minimum zoom; give
+// z/x/y for a tileset that has no tile there.
 //
 // A first request after a deployment can hit a cold start with a VPC and EFS
 // mount, so 5xx responses and network errors are retried a few times.
 
-const [baseUrl, tileset] = process.argv.slice(2);
-if (!baseUrl) {
-  console.error("usage: node scripts/check-deployment.js <base URL> [tileset]");
+const usage = () => {
+  console.error("usage: node scripts/check-deployment.js <base URL> [tileset [z/x/y]]");
   process.exit(2);
+};
+
+const [baseUrl, tileset, tileArg] = process.argv.slice(2);
+if (!baseUrl || (tileArg && !tileset)) usage();
+
+let tileCoords;
+if (tileArg) {
+  const m = /^(\d+)\/(\d+)\/(\d+)$/.exec(tileArg);
+  if (!m) usage();
+  tileCoords = { z: Number(m[1]), x: Number(m[2]), y: Number(m[3]) };
 }
 
 const MISSING = "__tileserverless-check-missing__";
@@ -113,7 +123,7 @@ const expectJson = async (path) => {
       throw new Error("tiles.json: no tile URL");
     }
     await expectJson(`${encodeURIComponent(tileset)}/metadata.json`);
-    const { z, x, y } = centerTile(tilesJson);
+    const { z, x, y } = tileCoords || centerTile(tilesJson);
     await expectTile(`${encodeURIComponent(tileset)}/tiles/${z}/${x}/${y}`);
   }
 

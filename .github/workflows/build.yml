@@ -149,10 +149,13 @@ jobs:
       # Requests the new API directly (not through CloudFront). Set the
       # repository variable SMOKE_TEST_TILESET to a tileset on EFS to also check
       # 200 responses; without it, only the handlers' 404 for a missing tileset.
+      # SMOKE_TEST_TILE (z/x/y) selects the tile to request from that tileset;
+      # without it, the tile at its center at its minimum zoom.
       - name: Check the deployed API
         env:
           STACK_NAME: ${{ github.ref == 'refs/heads/main' && 'tileserverless-sam-v1' || 'tileserverless-sam-dev' }}
           SMOKE_TEST_TILESET: ${{ vars.SMOKE_TEST_TILESET }}
+          SMOKE_TEST_TILE: ${{ vars.SMOKE_TEST_TILE }}
         run: |
           api_url="$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" \
             --query "Stacks[0].Outputs[?OutputKey=='HttpApiUrl'].OutputValue" --output text)"
@@ -161,4 +164,5 @@ jobs:
           if [ -n "$SMOKE_TEST_TILESET" ]; then
             echo "::add-mask::$SMOKE_TEST_TILESET"
           fi
-          node scripts/check-deployment.js "$api_url" ${SMOKE_TEST_TILESET:+"$SMOKE_TEST_TILESET"}
+          node scripts/check-deployment.js "$api_url" ${SMOKE_TEST_TILESET:+"$SMOKE_TEST_TILESET"} \
+            ${SMOKE_TEST_TILESET:+${SMOKE_TEST_TILE:+"$SMOKE_TEST_TILE"}}
