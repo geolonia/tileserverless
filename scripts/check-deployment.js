@@ -8,7 +8,9 @@
 // and EFS is mounted (a mount failure is a 5xx from the Lambda service).
 //
 // With a tileset (the {ver} part of the URL), also expects 200 from
-// tiles.json and metadata.json, and a tile URL in tiles.json.
+// tiles.json and metadata.json, a tile URL in tiles.json, and 200 from the
+// tile at the center of the tileset (tiles.json "center", or the middle of
+// "bounds") at its minimum zoom.
 //
 // A first request after a deployment can hit a cold start with a VPC and EFS
 // mount, so 5xx responses and network errors are retried a few times.
@@ -58,6 +60,39 @@ const expectHandlerNotFound = async (path) => {
   console.log(`ok  ${status} ${url}`);
 };
 
+// The x/y of the tile at zoom z that contains lon/lat (Web Mercator).
+const tileAt = (lon, lat, z) => {
+  const n = 2 ** z;
+  const clamp = (v) => Math.min(n - 1, Math.max(0, Math.floor(v)));
+  const rad = (Math.max(-85.0511, Math.min(85.0511, lat)) * Math.PI) / 180;
+  return {
+    x: clamp(((lon + 180) / 360) * n),
+    y: clamp(((1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2) * n),
+  };
+};
+
+const centerTile = (tilesJson) => {
+  const z = Number.isInteger(tilesJson.minzoom) ? tilesJson.minzoom : 0;
+  let lon = 0;
+  let lat = 0;
+  if (Array.isArray(tilesJson.center) && tilesJson.center.length >= 2) {
+    [lon, lat] = tilesJson.center;
+  } else if (Array.isArray(tilesJson.bounds) && tilesJson.bounds.length === 4) {
+    const [w, s, e, n] = tilesJson.bounds;
+    lon = (w + e) / 2;
+    lat = (s + n) / 2;
+  }
+  return { z, ...tileAt(lon, lat, z) };
+};
+
+const expectTile = async (path) => {
+  const { url, status } = await get(path);
+  if (status !== 200) {
+    throw new Error(`${url}: expected a tile (200), got ${status}`);
+  }
+  console.log(`ok  ${status} ${url}`);
+};
+
 const expectJson = async (path) => {
   const { url, status, body } = await get(path);
   if (status !== 200) {
@@ -78,6 +113,8 @@ const expectJson = async (path) => {
       throw new Error("tiles.json: no tile URL");
     }
     await expectJson(`${encodeURIComponent(tileset)}/metadata.json`);
+    const { z, x, y } = centerTile(tilesJson);
+    await expectTile(`${encodeURIComponent(tileset)}/tiles/${z}/${x}/${y}`);
   }
 
   console.log("Deployment check passed");

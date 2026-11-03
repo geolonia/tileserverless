@@ -107,10 +107,15 @@ describe("template.yaml", () => {
       { "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole" },
     ]);
     const statements = role.Policies.flatMap((p: any) => p.PolicyDocument.Statement);
-    expect(statements).toContainEqual(expect.objectContaining({
+    // The EFS client actions take a file system ARN; the access point the
+    // functions mount is a condition.
+    const accessPointArn = resources[tileName].Properties.FileSystemConfigs[0].Arn;
+    expect(statements).toContainEqual({
       Effect: "Allow",
       Action: ["elasticfilesystem:ClientMount", "elasticfilesystem:ClientWrite"],
-    }));
+      Resource: { "Fn::Sub": "arn:${AWS::Partition}:elasticfilesystem:${AWS::Region}:${AWS::AccountId}:file-system/*" },
+      Condition: { ArnEquals: { "elasticfilesystem:AccessPointArn": accessPointArn } },
+    });
   });
 
   it("keeps the logs of each function for 30 days", () => {

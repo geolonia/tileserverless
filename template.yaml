@@ -78,11 +78,16 @@ Resources:
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
+              # These actions apply to file systems, so the access point is a
+              # condition. Any file system: only the access point ID is known.
               - Effect: Allow
                 Action:
                   - elasticfilesystem:ClientMount
                   - elasticfilesystem:ClientWrite
-                Resource: !Sub arn:${AWS::Partition}:elasticfilesystem:${AWS::Region}:${AWS::AccountId}:access-point/${FileSystemAccessPointId}
+                Resource: !Sub arn:${AWS::Partition}:elasticfilesystem:${AWS::Region}:${AWS::AccountId}:file-system/*
+                Condition:
+                  ArnEquals:
+                    elasticfilesystem:AccessPointArn: !Sub arn:${AWS::Partition}:elasticfilesystem:${AWS::Region}:${AWS::AccountId}:access-point/${FileSystemAccessPointId}
 
   TileFunction:
     Type: AWS::Serverless::Function
