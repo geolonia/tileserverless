@@ -55,10 +55,17 @@ $ sam deploy --config-env default --parameter-overrides \
 
 Use `--config-env v1` and `Stage=v1` for the `v1` stage.
 
-After a deployment, check the API (CI does this too):
+After a deployment, check the API (CI does this too). It requests a missing tileset and expects the handlers' 404:
 
 ```shell
-$ node scripts/check-deployment.js https://XXXXX.execute-api.ap-northeast-1.amazonaws.com [tileset [z/x/y]]
+$ node scripts/check-deployment.js https://XXXXX.execute-api.ap-northeast-1.amazonaws.com
+```
+
+Optionally, add the name of a tileset on EFS to also expect 200 from its `tiles.json`, `metadata.json` and the tile at its center at its minimum zoom. If the tileset has no tile there, add the `z/x/y` of a tile it has:
+
+```shell
+$ node scripts/check-deployment.js https://XXXXX.execute-api.ap-northeast-1.amazonaws.com tileset
+$ node scripts/check-deployment.js https://XXXXX.execute-api.ap-northeast-1.amazonaws.com tileset 5/28/12
 ```
 
 To compare two deployments, for example before switching CloudFront to a new stack:
