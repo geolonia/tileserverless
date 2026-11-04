@@ -18,20 +18,19 @@ export const errorResponse = (status: number, message: string) => ({
   })
 });
 
+const TILE_XZ = /^\d+$/;
+const TILE_Y = /^\d+(\.[A-Za-z][A-Za-z0-9]*)?$/;
+
 export const parseTilePath = (params?: APIGatewayProxyEventPathParameters) => {
   if (!params) return null;
 
   const { x, y, z } = params;
-  const invalidTileXYZ = [x, y, z].every((val) => {
-    if (!val) return false;
-    const num = parseInt(val, 10);
-    return Number.isNaN(num) || num < 0;
-  });
-  if (invalidTileXYZ) {
+  // x and z are non-negative integers. y may have an extension such as `.pbf`,
+  // which starts with a letter so that a decimal such as `0.5` is rejected.
+  if (!x || !y || !z || !TILE_XZ.test(x) || !TILE_Y.test(y) || !TILE_XZ.test(z)) {
     return null;
   }
-  // At this point, we know that all x, y, and z exist.
-  return { x, y, z } as { x: string, y: string, z: string };
+  return { x, y, z };
 };
 
 export const getMbtilesFilename = async (version: string) => {
@@ -74,9 +73,10 @@ const getMBTilesInstance = (filename: string) => {
     }
 
     if (MBTILES_LRU_INDEX.length >= MBTILES_CACHE_MAX) {
-      const idxToDelete = MBTILES_LRU_INDEX.length - MBTILES_CACHE_MAX;
-      const filenamesToDelete = MBTILES_LRU_INDEX.splice(0, idxToDelete);
-      for (const toDel in filenamesToDelete) {
+      // Make room for the instance that is about to be added.
+      const countToDelete = MBTILES_LRU_INDEX.length - MBTILES_CACHE_MAX + 1;
+      const keysToDelete = MBTILES_LRU_INDEX.splice(0, countToDelete);
+      for (const toDel of keysToDelete) {
         delete MBTILES_CACHE[toDel];
       }
     }

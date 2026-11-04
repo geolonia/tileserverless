@@ -8,6 +8,10 @@ import fs from 'fs/promises';
 import path from "path";
 const { MOUNT_PATH } = process.env;
 
+// Route keys of the HTTP API routes (template.yaml) that this handler serves.
+export const ROUTE_TILES_JSON = "GET /{ver}/tiles.json";
+export const ROUTE_METADATA_JSON = "GET /{ver}/metadata.json";
+
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   const version = event.pathParameters?.ver;
   if (!version) {
@@ -36,14 +40,14 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   ];
 
   let body: { [key: string]: any };
-  if (event.routeKey === "GET /{ver}/metadata.json") {
+  if (event.routeKey === ROUTE_METADATA_JSON) {
     // metadata.json can be used to introspect a tileset without requiring authorization or
     // triggering a billable page-load.
     body = {
       ...meta,
       tiles: [],
     };
-  } else if (event.routeKey === "GET /{ver}/tiles.json") {
+  } else if (event.routeKey === ROUTE_TILES_JSON) {
     // tiles.json is mainly used for loading and viewing tiles, but some tools use this to
     // introspect and generate base styles, so important keys such as vector_layers are
     // preserved.

@@ -8,3 +8,20 @@ updates:
       timezone: "Asia/Tokyo"
     allow:
       - dependency-type: production
+
+  # Keeps the SHA pins of GitHub Actions current. The 8-day cooldown is one
+  # day longer than the 7-day minimum release age of the Action Pinning Check.
+  # Copied from geolonia/.github pinact/dependabot.yml.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 8
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
