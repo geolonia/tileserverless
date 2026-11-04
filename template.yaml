@@ -64,6 +64,9 @@ Resources:
   LambdaRole:
     Type: AWS::IAM::Role
     Properties:
+      # Upper limit for this role's permissions. The policy is managed outside
+      # this stack and must exist before the stack is deployed.
+      PermissionsBoundary: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/tileserverless-sam-lambda-boundary
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
