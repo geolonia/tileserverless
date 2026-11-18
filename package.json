@@ -3,6 +3,7 @@
   "description": "A Serverless Tile Server Kit.",
   "version": "2.7.1",
   "license": "MIT",
+  "packageManager": "pnpm@12.21.0",
   "engines": {
     "node": ">=22"
   },
@@ -10,7 +11,7 @@
     "test": "jest --coverage",
     "build": "tsc",
     "sam:validate": "sam validate --lint",
-    "sam:build": "yarn build && sam build"
+    "sam:build": "pnpm build && sam build"
   },
   "jest": {
     "moduleFileExtensions": [

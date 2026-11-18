@@ -23,13 +23,13 @@ Includes:
     - VPC for EFS
     - Security Group for the Lambda functions (EFS must allow TCP 2049 from it)
 - MBTiles should be uploaded as XXX.mbtiles in EFS
-- Node.js 22 or 24, yarn 1, and [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html)
+- Node.js 22 or 24, pnpm (the version in `packageManager` in `package.json`), and [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html)
 
 ## Development
 
 ```shell
-yarn
-yarn test
+pnpm install
+pnpm test
 ```
 
 ## Deploy
@@ -44,7 +44,7 @@ To deploy by hand:
 cp .envrc.sample .envrc
 vi .envrc
 source .envrc
-yarn sam:build
+pnpm sam:build
 sam deploy --config-env default --parameter-overrides \
     Stage=dev NameSuffix=-sam \
     "SecurityGroupIds=$TILESERVERLESS_SECURITY_GROUP_ID" \
