@@ -1,2 +1,9 @@
 allowBuilds:
   sqlite3: true
+  # Used by jest's watch mode; its prebuilt binary is an optional dependency.
+  '@parcel/watcher': false
+
+overrides:
+  # @mapbox/mbtiles asks for sqlite3 ^5, whose dependencies include tar 6
+  # (vulnerable); sqlite3 6 uses tar 7.
+  sqlite3: ^6.0.1
