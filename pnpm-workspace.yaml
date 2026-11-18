@@ -4,6 +4,7 @@ allowBuilds:
   '@parcel/watcher': false
 
 overrides:
-  # @mapbox/mbtiles asks for sqlite3 ^5, whose dependencies include tar 6
-  # (vulnerable); sqlite3 6 uses tar 7.
-  sqlite3: ^6.0.1
+  # sqlite3 5 and node-gyp 8 ask for tar 6 (vulnerable). They only use it to
+  # build sqlite3 from source. sqlite3 6 can't replace sqlite3 5: its prebuilt
+  # binary needs glibc 2.38, newer than the Lambda runtime's.
+  tar: ^7.5.23
