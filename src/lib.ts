@@ -65,6 +65,9 @@ const getMBTilesInstance = (filename: string) => {
     }
     if (cacheKey in MBTILES_CACHE) {
       const prevIdx = MBTILES_LRU_INDEX.indexOf(cacheKey);
+      // Keys are added to and removed from the cache and the index together,
+      // so a cached key is always in the index.
+      /* istanbul ignore else */
       if (prevIdx !== -1) {
         MBTILES_LRU_INDEX.splice(prevIdx, 1);
       }

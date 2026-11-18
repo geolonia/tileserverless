@@ -65,8 +65,9 @@ typings/
 
 /dist
 
-# use yarn only
+# use pnpm only
 package-lock.json
+yarn.lock
 
 # AWS SAM
 .aws-sam

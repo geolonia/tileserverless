@@ -13,7 +13,7 @@ version = 0.1
 stack_name = "tileserverless-sam-dev"
 
 [default.build.parameters]
-# Both functions run `yarn install`; in parallel they can race on the yarn cache.
+# Both functions run `pnpm install`; keep them sequential so they don't race on the pnpm store.
 parallel = false
 
 [default.deploy.parameters]
@@ -32,7 +32,7 @@ fail_on_empty_changeset = false
 stack_name = "tileserverless-sam-v1"
 
 [v1.build.parameters]
-# Both functions run `yarn install`; in parallel they can race on the yarn cache.
+# Both functions run `pnpm install`; keep them sequential so they don't race on the pnpm store.
 parallel = false
 
 [v1.deploy.parameters]
